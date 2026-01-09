@@ -1,2223 +1,2186 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>MindUrMind</title>
-<meta name="description" content="A student wellbeing and learning pilot: habits, routines, calm tools, and privacy-first school insights (aggregated on-device)." />
-<style>
-  :root{
-    --bg0:#f7fbff;
-    --bg1:#f4fff9;
-    --card:rgba(255,255,255,.82);
-    --card2:rgba(255,255,255,.92);
-    --text:#0f172a;
-    --muted:#475569;
-    --line:rgba(15,23,42,.10);
-    --shadow: 0 18px 45px rgba(15,23,42,.10);
-    --shadow2: 0 10px 22px rgba(15,23,42,.08);
-    --radius: 22px;
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <meta name="description" content="MindUrMind - School wellbeing awareness and habit building (non-clinical, privacy-first, on-device)." />
+  <title>MindUrMind</title>
 
-    --p1:#60a5fa;   /* sky */
-    --p2:#34d399;   /* mint */
-    --p3:#fbbf24;   /* sunshine */
-    --p4:#fb7185;   /* coral */
-    --p5:#a78bfa;   /* lavender */
-  }
+  <style>
+    :root{
+      --bg0:#f7fbff; --bg1:#f3fff8; --bg2:#fff7fb;
+      --card:#ffffffcc; --border: rgba(24,55,90,.10);
+      --text:#10213a; --muted: rgba(16,33,58,.72); --muted2: rgba(16,33,58,.58);
+      --accent:#3bb9ff; --accent2:#41d7a0; --warn:#ffb454; --danger:#ff5a76;
+      --shadow: 0 18px 50px rgba(14,38,76,.10); --shadow2: 0 10px 25px rgba(14,38,76,.08);
+      --radius: 20px; --focus: 0 0 0 4px rgba(59,185,255,.22);
+      --mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+      --sans: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji","Segoe UI Emoji";
+      --t-fast: 140ms; --t-med: 220ms; --t-slow: 420ms;
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{
+      margin:0; font-family: var(--sans); color:var(--text);
+      background:
+        radial-gradient(900px 520px at 12% 12%, rgba(59,185,255,.14), transparent 55%),
+        radial-gradient(850px 540px at 88% 18%, rgba(65,215,160,.14), transparent 58%),
+        radial-gradient(920px 560px at 50% 105%, rgba(255,180,84,.12), transparent 60%),
+        linear-gradient(180deg, var(--bg0), var(--bg1) 55%, var(--bg2));
+      overflow-x:hidden;
+    }
+    a{color:inherit}
+    .blob{position:fixed;z-index:-1;filter:blur(2px);opacity:.55;border-radius:999px;pointer-events:none;transform:translateZ(0)}
+    .blob.one{width:360px;height:360px;left:-90px;top:120px;background:radial-gradient(circle at 30% 30%, rgba(59,185,255,.42), rgba(59,185,255,0))}
+    .blob.two{width:420px;height:420px;right:-140px;top:90px;background:radial-gradient(circle at 30% 30%, rgba(65,215,160,.42), rgba(65,215,160,0))}
+    .blob.three{width:520px;height:520px;left:28%;bottom:-220px;background:radial-gradient(circle at 30% 30%, rgba(255,180,84,.32), rgba(255,180,84,0))}
 
-  *{box-sizing:border-box}
-  html,body{height:100%}
-  body{
-    margin:0;
-    font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial, "Noto Sans", "Apple Color Emoji", "Segoe UI Emoji";
-    color:var(--text);
-    background:
-      radial-gradient(1000px 500px at 10% 10%, rgba(96,165,250,.30), transparent 60%),
-      radial-gradient(900px 520px at 85% 20%, rgba(52,211,153,.28), transparent 62%),
-      radial-gradient(800px 520px at 65% 85%, rgba(167,139,250,.24), transparent 60%),
-      linear-gradient(180deg, var(--bg0), var(--bg1));
-    overflow-x:hidden;
-  }
+    .wrap{min-height:100%;display:flex;flex-direction:column}
+    .topbar{position:sticky;top:0;z-index:10;backdrop-filter:blur(12px);background:rgba(255,255,255,.72);border-bottom:1px solid var(--border)}
+    .topbar-inner{max-width:1100px;margin:0 auto;padding:14px 18px;display:flex;align-items:center;justify-content:space-between;gap:10px}
+    .brand{display:flex;align-items:center;gap:10px;text-decoration:none}
+    .logo{
+      width:38px;height:38px;border-radius:14px;
+      background:
+        radial-gradient(20px 18px at 30% 30%, rgba(255,255,255,.75), transparent 60%),
+        linear-gradient(135deg, rgba(59,185,255,.85), rgba(65,215,160,.75));
+      box-shadow:0 12px 26px rgba(14,38,76,.12);
+      position:relative;overflow:hidden
+    }
+    .logo:after{
+      content:"";position:absolute;inset:-20%;
+      background:linear-gradient(110deg, transparent, rgba(255,255,255,.55), transparent);
+      transform:rotate(12deg) translateX(-80%);
+      animation:sheen 6s ease-in-out infinite;opacity:.55
+    }
+    @keyframes sheen{
+      0%,55%{transform:rotate(12deg) translateX(-90%);opacity:0}
+      70%{opacity:.55}
+      100%{transform:rotate(12deg) translateX(110%);opacity:0}
+    }
+    .brand h1{font-size:16px;margin:0;letter-spacing:.2px;font-weight:800}
+    .brand small{display:block;font-size:12px;color:var(--muted2);margin-top:1px;font-weight:650}
+    .top-actions{display:flex;align-items:center;gap:10px;flex-wrap:wrap;justify-content:flex-end}
+    .chip{
+      font-size:12px;color:var(--muted);
+      border:1px solid var(--border);
+      background:rgba(255,255,255,.70);
+      padding:8px 10px;border-radius:999px;
+      display:inline-flex;align-items:center;gap:8px;user-select:none;
+      box-shadow:var(--shadow2)
+    }
+    .chip strong{color:var(--text);font-weight:850}
+    .btn{
+      border:1px solid var(--border);
+      background:rgba(255,255,255,.80);
+      color:var(--text);
+      padding:10px 12px;border-radius:14px;
+      cursor:pointer;font-weight:800;font-size:13px;
+      transition:transform var(--t-fast) ease, background var(--t-med) ease, border-color var(--t-med) ease, box-shadow var(--t-med) ease;
+      box-shadow:var(--shadow2)
+    }
+    .btn:hover{background:rgba(255,255,255,.92);border-color:rgba(24,55,90,.18);box-shadow:0 12px 25px rgba(14,38,76,.12);transform:translateY(-1px)}
+    .btn:active{transform:translateY(0) scale(.99)}
+    .btn.primary{border-color:rgba(59,185,255,.30);background:linear-gradient(135deg, rgba(59,185,255,.18), rgba(65,215,160,.14))}
+    .btn.danger{border-color:rgba(255,90,118,.35);background:rgba(255,90,118,.09)}
+    .btn:focus{outline:none;box-shadow:var(--focus)}
+    .smallbtn{padding:8px 10px;border-radius:12px;font-size:12px;font-weight:900}
 
-  /* floating calm shapes */
-  .blob{
-    position:fixed;
-    inset:auto auto auto auto;
-    width:420px; height:420px;
-    border-radius: 45% 55% 55% 45% / 55% 45% 55% 45%;
-    filter: blur(0px);
-    opacity:.16;
-    z-index:-1;
-    pointer-events:none;
-    transform: translate3d(0,0,0);
-    animation: floaty 14s ease-in-out infinite;
-  }
-  .blob.b1{ left:-140px; top:-140px; background:radial-gradient(circle at 30% 35%, rgba(96,165,250,.9), rgba(96,165,250,.05) 60%); }
-  .blob.b2{ right:-150px; top:20px; width:460px; height:460px; background:radial-gradient(circle at 40% 35%, rgba(52,211,153,.9), rgba(52,211,153,.05) 60%); animation-duration:18s;}
-  .blob.b3{ left:40%; bottom:-220px; width:520px; height:520px; background:radial-gradient(circle at 45% 40%, rgba(167,139,250,.9), rgba(167,139,250,.05) 60%); animation-duration:22s;}
+    main{max-width:1100px;width:100%;margin:0 auto;padding:22px 18px 28px;flex:1}
+    .grid{display:grid;grid-template-columns:1.1fr .9fr;gap:18px;align-items:start}
+    @media (max-width:920px){.grid{grid-template-columns:1fr}}
 
-  @keyframes floaty{
-    0%{ transform: translate3d(0,0,0) rotate(0deg) scale(1); }
-    50%{ transform: translate3d(18px, -14px,0) rotate(8deg) scale(1.03); }
-    100%{ transform: translate3d(0,0,0) rotate(0deg) scale(1); }
-  }
+    .card{
+      background:var(--card);
+      border:1px solid var(--border);
+      border-radius:var(--radius);
+      box-shadow:var(--shadow);
+      overflow:hidden;
+      transform:translateZ(0);
+      animation:popin var(--t-slow) ease both
+    }
+    @keyframes popin{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
 
-  @media (prefers-reduced-motion: reduce){
-    *{ animation:none !important; transition:none !important; scroll-behavior:auto !important; }
-  }
+    .card-header{
+      padding:16px 16px 12px;
+      border-bottom:1px solid rgba(16,33,58,.08);
+      display:flex;align-items:flex-start;justify-content:space-between;gap:12px;
+      background:linear-gradient(180deg, rgba(255,255,255,.75), rgba(255,255,255,.55))
+    }
+    .card-header h2{margin:0;font-size:16px;letter-spacing:.2px}
+    .card-header p{margin:6px 0 0;font-size:13px;color:var(--muted);line-height:1.4;max-width:64ch}
+    .card-body{padding:16px}
 
-  .wrap{ max-width:1100px; margin:0 auto; padding:18px 16px 40px; }
-  header{
-    display:flex; align-items:center; justify-content:space-between; gap:12px;
-    padding:14px 14px;
-    border:1px solid var(--line);
-    background:rgba(255,255,255,.55);
-    border-radius: var(--radius);
-    backdrop-filter: blur(10px);
-    box-shadow: var(--shadow2);
-  }
+    .stack{display:flex;flex-direction:column;gap:12px}
+    .row{display:flex;gap:12px;flex-wrap:wrap}
+    .field{display:flex;flex-direction:column;gap:7px;min-width:220px;flex:1}
+    label{font-size:12px;color:var(--muted2);font-weight:800;letter-spacing:.2px}
+    input,select,textarea{
+      width:100%;padding:12px 12px;border-radius:14px;
+      border:1px solid rgba(24,55,90,.14);
+      background:rgba(255,255,255,.82);
+      color:var(--text);font-size:14px;outline:none;
+      box-shadow:var(--shadow2);
+      transition:box-shadow var(--t-med) ease, border-color var(--t-med) ease, transform var(--t-fast) ease
+    }
+    textarea{min-height:96px;resize:vertical}
+    input:focus,select:focus,textarea:focus{box-shadow:var(--focus), var(--shadow2);border-color:rgba(59,185,255,.34)}
+    input:hover,select:hover,textarea:hover{border-color:rgba(24,55,90,.18)}
+    .help{font-size:12px;color:var(--muted2);line-height:1.35}
 
-  .brand{ display:flex; align-items:center; gap:10px; min-width:240px; }
-  .logo{
-    width:42px;height:42px;border-radius:14px;
-    background:
-      radial-gradient(circle at 35% 35%, rgba(255,255,255,.95), rgba(255,255,255,.20) 55%),
-      linear-gradient(135deg, rgba(96,165,250,.95), rgba(52,211,153,.85));
-    box-shadow: 0 10px 20px rgba(96,165,250,.25);
-    position:relative;
-    overflow:hidden;
-  }
-  .logo:after{
-    content:"";
-    position:absolute; inset:-40%;
-    background: radial-gradient(circle at 30% 30%, rgba(255,255,255,.75), transparent 55%);
-    transform: rotate(25deg);
-    opacity:.75;
-  }
-  h1{ font-size:1.05rem; margin:0; letter-spacing:.2px;}
-  .tagline{ font-size:.82rem; color:var(--muted); margin:0; }
+    .note{
+      padding:12px 12px;border-radius:16px;
+      border:1px solid rgba(24,55,90,.12);
+      background:rgba(255,255,255,.78);
+      color:var(--muted);font-size:13px;line-height:1.45;
+      box-shadow:var(--shadow2)
+    }
+    .note strong{color:var(--text)}
+    .note.warn{border-color:rgba(255,180,84,.30);background:rgba(255,180,84,.12)}
+    .note.ok{border-color:rgba(65,215,160,.30);background:rgba(65,215,160,.10)}
+    .divider{height:1px;background:rgba(24,55,90,.10);margin:8px 0}
 
-  .top-actions{ display:flex; align-items:center; gap:8px; flex-wrap:wrap; justify-content:flex-end; }
-  .pill{
-    display:inline-flex; align-items:center; gap:8px;
-    padding:8px 10px;
-    border:1px solid var(--line);
-    background: rgba(255,255,255,.76);
-    border-radius: 999px;
-    font-size:.86rem;
-    color:var(--muted);
-  }
+    .tabs{display:flex;gap:8px;flex-wrap:wrap}
+    .tab{
+      padding:9px 10px;border-radius:14px;
+      border:1px solid rgba(24,55,90,.12);
+      background:rgba(255,255,255,.70);
+      color:var(--muted);
+      cursor:pointer;font-weight:900;font-size:13px;
+      box-shadow:var(--shadow2);
+      transition:transform var(--t-fast) ease, background var(--t-med) ease, border-color var(--t-med) ease
+    }
+    .tab:hover{transform:translateY(-1px);background:rgba(255,255,255,.90);border-color:rgba(24,55,90,.18)}
+    .tab.active{color:var(--text);border-color:rgba(59,185,255,.32);background:linear-gradient(135deg, rgba(59,185,255,.14), rgba(65,215,160,.12))}
 
-  .btn{
-    appearance:none; border:1px solid var(--line);
-    background: rgba(255,255,255,.85);
-    color:var(--text);
-    padding:10px 12px;
-    border-radius: 14px;
-    cursor:pointer;
-    box-shadow: 0 10px 18px rgba(15,23,42,.06);
-    transition: transform .15s ease, box-shadow .15s ease, background .15s ease;
-    font-weight:750;
-  }
-  .btn:hover{ transform: translateY(-1px); box-shadow: 0 14px 26px rgba(15,23,42,.10); }
-  .btn:active{ transform: translateY(0px) scale(.99); }
-  .btn.small{ padding:8px 10px; border-radius: 12px; font-size:.86rem; }
-  .btn.primary{
-    background: linear-gradient(135deg, rgba(96,165,250,.95), rgba(52,211,153,.85));
-    border-color: rgba(96,165,250,.25);
-    color:#0b1220;
-  }
-  .btn.coral{
-    background: linear-gradient(135deg, rgba(251,113,133,.92), rgba(251,191,36,.88));
-    border-color: rgba(251,113,133,.25);
-    color:#0b1220;
-  }
-  .btn.ghost{ background: rgba(255,255,255,.55); }
-  .btn.danger{
-    background: linear-gradient(135deg, rgba(251,113,133,.35), rgba(255,255,255,.85));
-    border-color: rgba(251,113,133,.25);
-  }
-  .btn:focus{ outline:3px solid rgba(96,165,250,.35); outline-offset:2px; }
+    .pillrow{display:flex;gap:10px;flex-wrap:wrap}
+    .pill{
+      border:1px solid rgba(24,55,90,.12);
+      background:rgba(255,255,255,.78);
+      border-radius:999px;
+      padding:8px 10px;font-size:12px;color:var(--muted);
+      display:inline-flex;align-items:center;gap:8px;
+      box-shadow:var(--shadow2)
+    }
+    .pill b{color:var(--text)}
 
-  main{ margin-top:14px; }
+    .kpi{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+    @media(max-width:520px){.kpi{grid-template-columns:1fr}}
+    .kpi .box{
+      background:rgba(255,255,255,.78);
+      border:1px solid rgba(24,55,90,.10);
+      border-radius:18px;
+      padding:12px 12px;
+      box-shadow:var(--shadow2)
+    }
+    .kpi .box .v{font-size:18px;font-weight:950;letter-spacing:.2px;margin-top:4px}
+    .kpi .box .t{font-size:12px;color:var(--muted2);font-weight:900;letter-spacing:.15px}
 
-  .grid{ display:grid; grid-template-columns: 1.25fr .75fr; gap:14px; }
-  @media (max-width: 980px){ .grid{ grid-template-columns: 1fr; } }
+    .list{display:flex;flex-direction:column;gap:10px}
+    .item{
+      border:1px solid rgba(24,55,90,.10);
+      background:rgba(255,255,255,.78);
+      border-radius:18px;
+      padding:12px;
+      box-shadow:var(--shadow2);
+      transition:transform var(--t-fast) ease, box-shadow var(--t-med) ease
+    }
+    .item:hover{transform:translateY(-1px);box-shadow:0 14px 28px rgba(14,38,76,.10)}
+    .item h3{margin:0 0 6px;font-size:14px}
+    .item p{margin:0;color:var(--muted);font-size:13px;line-height:1.45}
+    .muted{color:var(--muted2)}
+    .right-col .card{box-shadow:none}
 
-  .card{
-    border:1px solid var(--line);
-    background: var(--card);
-    border-radius: var(--radius);
-    box-shadow: var(--shadow);
-    padding:14px;
-    backdrop-filter: blur(10px);
-  }
-  .card.solid{ background: var(--card2); }
+    footer{max-width:1100px;margin:0 auto;padding:0 18px 18px;color:var(--muted2);font-size:12px;line-height:1.4}
+    .badge{
+      display:inline-flex;align-items:center;gap:8px;
+      padding:8px 10px;border-radius:999px;
+      border:1px solid rgba(59,185,255,.28);
+      background:rgba(59,185,255,.12);
+      color:var(--text);
+      font-weight:950;font-size:12px;
+      box-shadow:var(--shadow2)
+    }
+    .dangertext{color:var(--danger)}
+    .oktext{color:#12a66b}
+    .warntext{color:#d47d00}
+    .mono{font-family:var(--mono)}
 
-  .card h2{ font-size:1.02rem; margin:0 0 6px;}
-  .card p{ margin:6px 0 0; color:var(--muted); line-height:1.55; }
-  .fineprint{ font-size:.82rem; color:var(--muted); }
+    .quickgrid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}
+    @media(max-width:980px){.quickgrid{grid-template-columns:repeat(2,1fr)}}
+    @media(max-width:720px){.quickgrid{grid-template-columns:1fr}}
 
-  .hide{ display:none !important; }
+    .tile{
+      text-align:left;
+      padding:12px 12px;
+      border-radius:18px;
+      border:1px solid rgba(24,55,90,.10);
+      background:rgba(255,255,255,.80);
+      cursor:pointer;
+      transition:transform var(--t-fast) ease, background var(--t-med) ease, border-color var(--t-med) ease, box-shadow var(--t-med) ease;
+      box-shadow:var(--shadow2);
+      position:relative;overflow:hidden
+    }
+    .tile:before{
+      content:"";
+      position:absolute;inset:-40%;
+      background:radial-gradient(circle at 30% 30%, rgba(59,185,255,.14), transparent 55%);
+      transform:rotate(8deg);
+      opacity:.8;
+      pointer-events:none
+    }
+    .tile:hover{background:rgba(255,255,255,.92);border-color:rgba(24,55,90,.16);transform:translateY(-1px);box-shadow:0 14px 28px rgba(14,38,76,.12)}
+    .tile:active{transform:translateY(0) scale(.99)}
+    .tile:focus{outline:none;box-shadow:var(--focus)}
+    .tile .t{font-weight:950;letter-spacing:.2px;margin:0 0 6px;font-size:14px;position:relative}
+    .tile .s{margin:0;color:var(--muted);font-size:13px;line-height:1.35;position:relative}
 
-  .tabs{
-    display:flex; gap:8px; flex-wrap:wrap;
-    padding:10px;
-    border:1px solid var(--line);
-    background: rgba(255,255,255,.55);
-    border-radius: 18px;
-  }
-  .tab{
-    display:inline-flex; align-items:center; gap:8px;
-    padding:10px 12px;
-    border-radius: 14px;
-    border:1px solid transparent;
-    cursor:pointer;
-    font-weight:800;
-    color: var(--muted);
-    transition: background .15s ease, transform .15s ease, border-color .15s ease;
-  }
-  .tab:hover{ background: rgba(255,255,255,.6); transform: translateY(-1px); }
-  .tab.active{
-    background: rgba(255,255,255,.88);
-    border-color: rgba(96,165,250,.22);
-    color: var(--text);
-    box-shadow: 0 12px 22px rgba(15,23,42,.08);
-  }
+    .toast{
+      position:fixed;left:50%;bottom:18px;transform:translateX(-50%);
+      background:rgba(255,255,255,.92);
+      border:1px solid rgba(24,55,90,.12);
+      border-radius:999px;
+      padding:10px 12px;
+      box-shadow:0 18px 45px rgba(14,38,76,.14);
+      color:var(--text);
+      font-weight:900;font-size:13px;
+      display:none;z-index:99
+    }
+    .toast.show{display:inline-flex;animation:toastIn var(--t-slow) ease both}
+    @keyframes toastIn{from{opacity:0;transform:translateX(-50%) translateY(10px)}to{opacity:1;transform:translateX(-50%) translateY(0)}}
 
-  .row{ display:flex; gap:10px; flex-wrap:wrap; align-items:center; }
-  label{ font-size:.86rem; color:var(--muted); font-weight:750; display:block; margin:8px 0 6px; }
-  input, select, textarea{
-    width:100%;
-    padding:11px 12px;
-    border-radius: 14px;
-    border:1px solid rgba(15,23,42,.12);
-    background: rgba(255,255,255,.92);
-    color: var(--text);
-    outline:none;
-    transition: box-shadow .15s ease, border-color .15s ease;
-    font-size:.96rem;
-  }
-  textarea{ min-height:92px; resize:vertical; }
-  input:focus, select:focus, textarea:focus{
-    border-color: rgba(96,165,250,.45);
-    box-shadow: 0 0 0 4px rgba(96,165,250,.18);
-  }
+    /* Mini-game canvas */
+    .gameWrap{
+      position:relative;
+      border-radius:18px;
+      overflow:hidden;
+      border:1px solid rgba(24,55,90,.10);
+      background:linear-gradient(180deg, rgba(59,185,255,.12), rgba(65,215,160,.10));
+      box-shadow:var(--shadow2);
+      min-height:280px
+    }
+    canvas{display:block;width:100%;height:320px}
+    .gameHUD{
+      position:absolute;inset:12px 12px auto 12px;
+      display:flex;gap:10px;flex-wrap:wrap;align-items:center;justify-content:space-between;
+      pointer-events:none
+    }
+    .hudPill{
+      pointer-events:none;
+      display:inline-flex;gap:8px;align-items:center;
+      padding:8px 10px;border-radius:999px;
+      background:rgba(255,255,255,.86);
+      border:1px solid rgba(24,55,90,.12);
+      box-shadow:var(--shadow2);
+      font-weight:950;font-size:12px;color:var(--text)
+    }
 
-  .kpi{ display:grid; grid-template-columns: repeat(3, 1fr); gap:10px; margin-top:10px;}
-  @media(max-width:720px){ .kpi{ grid-template-columns:1fr; } }
-  .k{ padding:12px; border:1px solid var(--line); background: rgba(255,255,255,.72); border-radius: 18px; }
-  .big{ font-size:1.4rem; font-weight:900; }
-  .small{ font-size:.85rem; color:var(--muted); margin-top:2px;}
+    /* Emotion Quest */
+    .questBox{
+      border-radius:18px;
+      border:1px solid rgba(24,55,90,.10);
+      background:rgba(255,255,255,.78);
+      box-shadow:var(--shadow2);
+      padding:12px;
+      overflow:hidden;
+    }
+    .questProgress{
+      height:10px;border-radius:999px;background:rgba(24,55,90,.08);overflow:hidden;border:1px solid rgba(24,55,90,.08)
+    }
+    .questProgress > div{
+      height:100%;
+      width:0%;
+      background:linear-gradient(90deg, rgba(59,185,255,.55), rgba(65,215,160,.55));
+      border-radius:999px;
+      transition:width var(--t-med) ease;
+    }
+    .choiceBtn{
+      width:100%;
+      text-align:left;
+      padding:12px 12px;
+      border-radius:16px;
+      border:1px solid rgba(24,55,90,.10);
+      background:rgba(255,255,255,.86);
+      box-shadow:var(--shadow2);
+      cursor:pointer;
+      font-weight:900;
+      transition:transform var(--t-fast) ease, box-shadow var(--t-med) ease, border-color var(--t-med) ease;
+    }
+    .choiceBtn:hover{transform:translateY(-1px);border-color:rgba(24,55,90,.16);box-shadow:0 14px 28px rgba(14,38,76,.10)}
+    .choiceBtn:active{transform:translateY(0) scale(.99)}
+    .choiceBtn:focus{outline:none;box-shadow:var(--focus)}
+    .choiceBtn small{display:block;margin-top:6px;color:var(--muted);font-weight:800}
 
-  .chips{ display:flex; gap:8px; flex-wrap:wrap; margin-top:10px;}
-  .chip{
-    padding:8px 10px;
-    border-radius: 999px;
-    border:1px solid var(--line);
-    background: rgba(255,255,255,.74);
-    cursor:pointer;
-    font-weight:800;
-    color:var(--muted);
-    transition: transform .12s ease, background .12s ease;
-  }
-  .chip:hover{ transform: translateY(-1px); background: rgba(255,255,255,.92); }
-  .chip.on{ background: rgba(52,211,153,.18); color:#0b1220; border-color: rgba(52,211,153,.25); }
+    /* Coach chat */
+    .chatWrap{
+      border-radius:18px;
+      border:1px solid rgba(24,55,90,.10);
+      background:rgba(255,255,255,.78);
+      box-shadow:var(--shadow2);
+      padding:12px;
+    }
+    .chatLog{
+      max-height:260px;
+      overflow:auto;
+      padding:6px;
+      border-radius:16px;
+      border:1px solid rgba(24,55,90,.08);
+      background:rgba(255,255,255,.70);
+    }
+    .msg{display:flex;flex-direction:column;gap:4px;margin:10px 0}
+    .msg .who{font-size:12px;color:var(--muted2);font-weight:900}
+    .bubble{
+      display:inline-block;
+      max-width: 80ch;
+      padding:10px 12px;
+      border-radius:16px;
+      border:1px solid rgba(24,55,90,.10);
+      background:rgba(255,255,255,.90);
+      box-shadow:var(--shadow2);
+      line-height:1.45;
+      font-size:13px;
+      color:rgba(16,33,58,.92);
+    }
+    .bubble.user{
+      background:linear-gradient(135deg, rgba(59,185,255,.16), rgba(65,215,160,.12));
+      border-color: rgba(59,185,255,.22);
+    }
 
-  .split{ display:grid; grid-template-columns: 1fr 1fr; gap:10px; }
-  @media(max-width:720px){ .split{ grid-template-columns:1fr; } }
-
-  .list{ margin:8px 0 0; padding:0; list-style:none; }
-  .list li{
-    padding:10px 10px;
-    border:1px solid var(--line);
-    background: rgba(255,255,255,.72);
-    border-radius: 16px;
-    margin-bottom:8px;
-    display:flex; align-items:flex-start; justify-content:space-between; gap:10px;
-  }
-
-  .badge{
-    display:inline-flex; align-items:center; gap:8px;
-    padding:8px 10px;
-    border-radius: 999px;
-    background: rgba(167,139,250,.16);
-    border:1px solid rgba(167,139,250,.25);
-    color:#0b1220;
-    font-weight:850;
-    font-size:.86rem;
-  }
-
-  /* calm animated orb */
-  .orb{
-    width:120px;height:120px;border-radius: 999px;
-    background:
-      radial-gradient(circle at 35% 35%, rgba(255,255,255,.95), rgba(255,255,255,.25) 55%),
-      radial-gradient(circle at 65% 70%, rgba(96,165,250,.85), rgba(96,165,250,.10) 60%),
-      radial-gradient(circle at 35% 70%, rgba(52,211,153,.72), rgba(52,211,153,.08) 62%);
-    border:1px solid rgba(255,255,255,.7);
-    box-shadow: 0 18px 40px rgba(96,165,250,.18);
-    animation: breathe 6s ease-in-out infinite;
-  }
-  @keyframes breathe{
-    0%{ transform: scale(1); filter:saturate(1); }
-    50%{ transform: scale(1.05); filter:saturate(1.1); }
-    100%{ transform: scale(1); filter:saturate(1); }
-  }
-
-  .toast{
-    position:fixed; left:50%; bottom:18px;
-    transform: translateX(-50%);
-    background: rgba(15,23,42,.86);
-    color:white;
-    padding:10px 14px;
-    border-radius: 999px;
-    box-shadow: 0 18px 40px rgba(15,23,42,.22);
-    opacity:0; pointer-events:none;
-    transition: opacity .2s ease, transform .2s ease;
-    font-weight:750;
-    z-index:1000;
-  }
-  .toast.on{ opacity:1; transform: translateX(-50%) translateY(-2px); }
-
-  .divider{ height:1px; background: var(--line); margin:12px 0; }
-
-  .progress{
-    width:100%; height:10px; border-radius: 999px;
-    background: rgba(15,23,42,.08); overflow:hidden; border:1px solid rgba(15,23,42,.08);
-  }
-  .progress > div{
-    height:100%;
-    width:0%;
-    background: linear-gradient(90deg, rgba(52,211,153,.95), rgba(96,165,250,.95), rgba(167,139,250,.95));
-    border-radius: 999px;
-    transition: width .25s ease;
-  }
-
-  .mini{
-    border:1px solid var(--line);
-    border-radius: 18px;
-    padding:12px;
-    background: rgba(255,255,255,.70);
-  }
-
-  .gamebox{
-    border:1px solid var(--line);
-    border-radius: 22px;
-    padding:14px;
-    background: rgba(255,255,255,.76);
-    position:relative;
-    overflow:hidden;
-  }
-  .spark{
-    position:absolute; width:10px; height:10px; border-radius: 999px;
-    background: rgba(251,191,36,.9);
-    opacity:.0;
-    pointer-events:none;
-  }
-
-  .pill-note{
-    font-size:.84rem; color:var(--muted);
-    padding:10px 12px; border:1px dashed rgba(15,23,42,.18);
-    border-radius: 18px; background: rgba(255,255,255,.55);
-    line-height:1.5;
-  }
-
-  .safety{
-    border:1px solid rgba(251,113,133,.30);
-    background: rgba(251,113,133,.10);
-    border-radius: 18px;
-    padding:12px;
-  }
-
-  .sr-only{
-    position:absolute;
-    width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0;
-  }
-</style>
+    @media (prefers-reduced-motion: reduce){
+      *{animation-duration:1ms !important;animation-iteration-count:1 !important;transition-duration:1ms !important}
+      .logo:after{display:none}
+    }
+  </style>
 </head>
+
 <body>
-<div class="blob b1"></div><div class="blob b2"></div><div class="blob b3"></div>
+  <div class="blob one"></div>
+  <div class="blob two"></div>
+  <div class="blob three"></div>
+  <div class="toast" id="toast">Saved ✓</div>
 
-<div class="wrap">
-  <header>
-    <div class="brand">
-      <div class="logo" aria-hidden="true"></div>
-      <div>
-        <h1>MindUrMind</h1>
-        <p class="tagline">Wellbeing • Study routines • Healthy habits • Privacy-first (on-device)</p>
-      </div>
-    </div>
-
-    <div class="top-actions">
-      <div class="pill" id="statusPill">Signed out</div>
-      <button class="btn small ghost" id="btnSignOut" onclick="signOut()" disabled>Sign out</button>
-      <button class="btn small danger" onclick="resetAll()">Reset data</button>
-    </div>
-  </header>
-
-  <main>
-    <!-- AUTH -->
-    <section class="card solid" id="auth">
-      <h2>Sign in</h2>
-      <p>Select your role to continue. This pilot stores logs on this device only.</p>
-
-      <div class="tabs" style="margin-top:10px;">
-        <div class="tab active" data-role="student" onclick="setRole('student')">🧑‍🎓 Student</div>
-        <div class="tab" data-role="school" onclick="setRole('school')">🏫 School</div>
-      </div>
-
-      <div class="split" style="margin-top:10px;">
-        <div class="mini" id="studentAuth">
-          <div class="row" style="justify-content:space-between;">
-            <span class="badge">Student login</span>
-            <button class="btn small ghost" onclick="autofill('student')">Auto-fill</button>
+  <div class="wrap">
+    <header class="topbar" role="banner">
+      <div class="topbar-inner">
+        <a class="brand" href="#" id="brandHome" aria-label="MindUrMind Home">
+          <div class="logo" aria-hidden="true"></div>
+          <div>
+            <h1>MindUrMind</h1>
+            <small>School wellbeing awareness • privacy-first • on-device</small>
           </div>
-          <label for="stEmail">Student email</label>
-          <input id="stEmail" placeholder="student@example.com" autocomplete="email" />
-          <label for="stName">Name</label>
-          <input id="stName" placeholder="First name" autocomplete="name" />
-          <label for="stGrade">Grade</label>
-          <select id="stGrade">
-            <option value="">Select grade</option>
-            <option>Grade 4</option><option>Grade 5</option><option>Grade 6</option><option>Grade 7</option>
-            <option>Grade 8</option><option>Grade 9</option><option>Grade 10</option><option>Grade 11</option><option>Grade 12</option>
-          </select>
-
-          <div class="row" style="margin-top:10px;">
-            <button class="btn primary" onclick="signInStudent()">Continue</button>
-          </div>
-
-          <p class="fineprint" style="margin-top:10px;">
-            Mood notes and journal entries remain private to the student profile on this device.
-          </p>
-
-          <div class="divider"></div>
-          <p class="fineprint" style="margin:0;">
-            Student tools include mood check-ins, study planner + focus timer, sleep & wind-down routine, habit streaks + badges, calm toolkit, games, private journal, and eco-anxiety coping + action planning.
-          </p>
-        </div>
-
-        <div class="mini" id="schoolAuth" style="display:none;">
-          <div class="row" style="justify-content:space-between;">
-            <span class="badge">School login</span>
-            <button class="btn small ghost" onclick="autofill('school')">Auto-fill</button>
-          </div>
-          <label for="scEmail">School email</label>
-          <input id="scEmail" placeholder="wellbeing@school.ae" autocomplete="email" />
-          <div class="row" style="margin-top:10px;">
-            <button class="btn primary" onclick="signInSchool()">Continue</button>
-          </div>
-
-          <p class="fineprint" style="margin-top:10px;">
-            School view shows aggregated trends stored on this device only (no student identities, no notes).
-          </p>
-
-          <div class="divider"></div>
-          <p class="fineprint" style="margin:0;">
-            School insights can support planning (e.g., wellbeing sessions, study load coordination, sleep awareness weeks, and eco-anxiety education).
-          </p>
+        </a>
+        <div class="top-actions">
+          <span class="chip" title="Pilot design"><span aria-hidden="true">🔒</span><span><strong>Device-only</strong> reflections</span></span>
+          <button class="btn smallbtn" id="openFamily">Family Corner</button>
+          <button class="btn smallbtn" id="openAbout">About & Privacy</button>
+          <button class="btn danger smallbtn" id="logoutBtn" style="display:none">Log out</button>
         </div>
       </div>
-    </section>
+    </header>
 
-    <!-- STUDENT APP -->
-    <section class="card hide" id="studentApp">
-      <div class="row" style="justify-content:space-between; align-items:flex-start;">
-        <div>
-          <h2 id="hello">Hi!</h2>
-          <p class="fineprint" id="helloSub">Welcome back.</p>
-          <div class="row" style="margin-top:8px; gap:8px;">
-            <span class="badge" id="topMood">Mood: –</span>
-            <span class="badge" id="topFocus">Focus: –</span>
-            <span class="badge" id="topSleep">Sleep: –</span>
-            <span class="badge" id="topBadges">Badges: 0</span>
-          </div>
-        </div>
-        <div class="orb" aria-hidden="true"></div>
-      </div>
-
-      <div class="tabs" style="margin-top:12px;">
-        <div class="tab active" data-view="dash" onclick="showStudentView('dash')">🏠 Dashboard</div>
-        <div class="tab" data-view="mood" onclick="showStudentView('mood')">🙂 Mood</div>
-        <div class="tab" data-view="study" onclick="showStudentView('study')">📚 Study</div>
-        <div class="tab" data-view="sleep" onclick="showStudentView('sleep')">🌙 Sleep</div>
-        <div class="tab" data-view="calm" onclick="showStudentView('calm')">🫧 Calm</div>
-        <div class="tab" data-view="eco" onclick="showStudentView('eco')">🌿 Eco-anxiety</div>
-        <div class="tab" data-view="game" onclick="showStudentView('game')">🎮 Games</div>
-        <div class="tab" data-view="journal" onclick="showStudentView('journal')">📓 Journal</div>
-        <div class="tab" data-view="insights" onclick="showStudentView('insights')">📈 Insights</div>
-        <div class="tab" data-view="help" onclick="showStudentView('help')">🆘 Help</div>
-      </div>
-
-      <!-- DASH -->
-      <section class="card hide" id="st-view-dash" style="margin-top:12px;">
-        <h2>Today at a glance</h2>
-        <p>Pick one small step and finish it. That’s enough.</p>
-
-        <div class="split" style="margin-top:12px;">
-          <div class="mini">
-            <h2 style="font-size:1rem; margin:0 0 6px;">Mood check-in</h2>
-            <p class="fineprint" style="margin:0;">Track feelings and get a coping suggestion.</p>
-            <div class="row" style="margin-top:10px;">
-              <button class="btn primary" onclick="showStudentView('mood')">Mood check</button>
-              <button class="btn ghost" onclick="quickAction('mood')">Quick save</button>
-            </div>
-          </div>
-          <div class="mini">
-            <h2 style="font-size:1rem; margin:0 0 6px;">Focus session</h2>
-            <p class="fineprint" style="margin:0;">Reduce stress with structured focus.</p>
-            <div class="row" style="margin-top:10px;">
-              <button class="btn primary" onclick="showStudentView('study')">Start focus</button>
-              <button class="btn ghost" onclick="quickAction('focus')">1-minute plan</button>
-            </div>
-          </div>
-        </div>
-
-        <div class="split" style="margin-top:10px;">
-          <div class="mini">
-            <h2 style="font-size:1rem; margin:0 0 6px;">Sleep & energy</h2>
-            <p class="fineprint" style="margin:0;">Log sleep and get a simple tip.</p>
-            <div class="row" style="margin-top:10px;">
-              <button class="btn primary" onclick="showStudentView('sleep')">Log sleep</button>
-              <button class="btn ghost" onclick="quickAction('winddown')">Wind-down idea</button>
-            </div>
-          </div>
-          <div class="mini">
-            <h2 style="font-size:1rem; margin:0 0 6px;">Habit streaks</h2>
-            <p class="fineprint" style="margin:0;">Tiny habits → strong mind.</p>
-            <div class="chips" aria-label="Habits">
-              <button class="chip" id="hb-water" onclick="toggleHabit('water')">💧 Water</button>
-              <button class="chip" id="hb-move" onclick="toggleHabit('move')">🏃 Move</button>
-              <button class="chip" id="hb-kind" onclick="toggleHabit('kind')">💛 Kindness</button>
-            </div>
-            <p class="fineprint" style="margin:8px 0 0;">Streak points: <b id="habitPts">–</b></p>
-          </div>
-        </div>
-
-        <div class="split" style="margin-top:10px;">
-          <div class="mini">
-            <h2 style="font-size:1rem; margin:0 0 6px;">Eco calm actions</h2>
-            <p class="fineprint" style="margin:0;">Small climate actions can reduce helplessness. Pick one you can do this week.</p>
-            <div class="progress" style="margin-top:10px;"><div id="ecoDashProg"></div></div>
-            <p class="fineprint" style="margin:8px 0 0;">This week: <b id="ecoDashDone">0</b> actions done.</p>
-            <div class="row" style="margin-top:10px;">
-              <button class="btn primary" onclick="showStudentView('eco')">Open eco page</button>
-              <button class="btn ghost" onclick="ecoQuickOne()">Mark 1 action</button>
-            </div>
-          </div>
-          <div class="mini">
-            <h2 style="font-size:1rem; margin:0 0 6px;">Mood Garden</h2>
-            <p class="fineprint" style="margin:0;">Grow your plant by doing small helpful steps (no perfection).</p>
-            <div class="row" style="margin-top:10px; gap:12px;">
-              <div style="flex:1;">
-                <div class="progress"><div id="gardenProg"></div></div>
-                <p class="fineprint" style="margin:8px 0 0;">Growth: <b id="gardenPct">0%</b></p>
-                <div class="row" style="margin-top:10px;">
-                  <button class="btn primary" onclick="gardenBoost()">Boost 🌱</button>
-                  <button class="btn ghost" onclick="gardenReset()">Reset</button>
-                </div>
-              </div>
-              <div aria-hidden="true" style="width:140px; display:flex; align-items:center; justify-content:center;">
-                <svg id="gardenSvg" width="120" height="120" viewBox="0 0 120 120" fill="none">
-                  <path d="M20 92c10 8 70 8 80 0" stroke="rgba(15,23,42,.18)" stroke-width="10" stroke-linecap="round"/>
-                  <path id="stem" d="M60 86V60" stroke="rgba(52,211,153,.9)" stroke-width="7" stroke-linecap="round"/>
-                  <path id="leafL" d="M60 68c-18-2-22-14-22-14 16-3 24 8 22 14Z" fill="rgba(96,165,250,.65)"/>
-                  <path id="leafR" d="M60 68c18-2 22-14 22-14-16-3-24 8-22 14Z" fill="rgba(167,139,250,.55)"/>
-                  <circle id="bud" cx="60" cy="56" r="10" fill="rgba(251,191,36,.85)"/>
-                </svg>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <!-- MOOD -->
-      <section class="card hide" id="st-view-mood" style="margin-top:12px;">
-        <h2>Mood check-in</h2>
-        <p>Pick what matches you right now. Notes are optional and private.</p>
-
-        <div class="split" style="margin-top:10px;">
-          <div>
-            <label for="moodPick">Mood</label>
-            <select id="moodPick">
-              <option value="">Choose</option>
-              <option value="Great">Great 😊</option>
-              <option value="Okay">Okay 🙂</option>
-              <option value="Stressed">Stressed 😟</option>
-              <option value="Sad">Sad 😔</option>
-              <option value="Angry">Angry 😠</option>
-              <option value="Anxious">Anxious 😣</option>
-              <option value="Tired">Tired 😴</option>
-              <option value="Lonely">Lonely 🫥</option>
-            </select>
-
-            <label for="mIntensity">Intensity (1–5)</label>
-            <input id="mIntensity" type="range" min="1" max="5" value="3" oninput="document.getElementById('mIntOut').textContent=this.value" />
-            <p class="fineprint" style="margin:6px 0 0;">Intensity: <b id="mIntOut">3</b>/5</p>
-
-            <label for="mCause">What’s causing it? (optional category)</label>
-            <select id="mCause">
-              <option value="">Choose</option>
-              <option>Exams / homework</option>
-              <option>Friendship / peer pressure</option>
-              <option>Family</option>
-              <option>Health / tired</option>
-              <option>Sports / activities</option>
-              <option>Online / social media</option>
-              <option>Eco / climate worries</option>
-              <option>Other</option>
-            </select>
-            <p class="fineprint" style="margin:6px 0 0;">Categories help show overall trends (without personal details).</p>
-          </div>
-
-          <div>
-            <label for="mNote">Optional note (private)</label>
-            <textarea id="mNote" placeholder="One sentence is enough."></textarea>
-
-            <div class="row" style="margin-top:10px;">
-              <button class="btn primary" onclick="saveMood()">Save mood</button>
-              <button class="btn ghost" onclick="showMoodSuggestion()">Suggestion</button>
-            </div>
-
-            <div class="pill-note" style="margin-top:10px;">
-              <b>Last:</b> <span id="mLast">–</span><br/>
-              <span id="mSuggestion" class="fineprint"></span>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <!-- STUDY -->
-      <section class="card hide" id="st-view-study" style="margin-top:12px;">
-        <h2>Study planner + Focus timer</h2>
-        <p>Add tasks and use the focus timer to stay calm and consistent.</p>
-
-        <div class="split" style="margin-top:10px;">
-          <div>
-            <label for="tSubject">Subject</label>
-            <input id="tSubject" placeholder="Math / English / Science…" />
-            <label for="tTask">Task</label>
-            <input id="tTask" placeholder="Finish worksheet Q1–10" />
-            <label for="tDue">Due date (optional)</label>
-            <input id="tDue" type="date" />
-            <div class="row" style="margin-top:10px;">
-              <button class="btn primary" onclick="addTask()">Add task</button>
-              <button class="btn ghost" onclick="clearDoneTasks()">Clear done</button>
-            </div>
-            <p class="fineprint" style="margin-top:10px;"><b id="taskCount">0</b> tasks</p>
-            <ul class="list" id="taskList"></ul>
-          </div>
-
-          <div>
-            <h2 style="font-size:1rem; margin:0 0 6px;">Focus timer</h2>
-            <p class="fineprint" style="margin:0;">Choose a mode and press start.</p>
-
-            <div class="chips" style="margin-top:10px;">
-              <button class="chip on" id="modeFocus" onclick="setTimerMode('focus')">Focus 25</button>
-              <button class="chip" id="modeBreak" onclick="setTimerMode('break')">Break 5</button>
-              <button class="chip" id="modeDeep" onclick="setTimerMode('deep')">Deep 45</button>
-            </div>
-
-            <div class="gamebox" style="margin-top:10px;">
-              <div class="row" style="justify-content:space-between;">
-                <div>
-                  <div class="big" id="timerDisplay" style="font-variant-numeric: tabular-nums;">25:00</div>
-                  <div class="fineprint">Mode: <b id="timerModeLabel">Focus</b></div>
-                </div>
-                <div class="badge" id="focusBadge">Focus points: <span id="focusPts">0</span></div>
-              </div>
-
-              <div class="row" style="margin-top:10px;">
-                <button class="btn primary" id="btnStartTimer" onclick="startTimer()">Start</button>
-                <button class="btn ghost" onclick="pauseTimer()">Pause</button>
-                <button class="btn ghost" onclick="resetTimer()">Reset</button>
-              </div>
-              <p class="fineprint" style="margin-top:10px;">
-                Tip: Start with just 10 minutes. Momentum matters more than perfect plans.
-              </p>
-            </div>
-
-            <div class="divider"></div>
-            <h2 style="font-size:1rem; margin:0 0 6px;">Study stress helper</h2>
-            <p class="fineprint" style="margin:0;">Pick one:</p>
-            <div class="chips">
-              <button class="chip" onclick="stressHelper('plan')">Plan</button>
-              <button class="chip" onclick="stressHelper('start')">Start</button>
-              <button class="chip" onclick="stressHelper('calm')">Calm</button>
-            </div>
-            <div class="pill-note" id="stressOut" style="margin-top:10px;">Choose an option above.</div>
-          </div>
-        </div>
-      </section>
-
-      <!-- SLEEP -->
-      <section class="card hide" id="st-view-sleep" style="margin-top:12px;">
-        <h2>Sleep tracker</h2>
-        <p>Log sleep and build energy over time.</p>
-
-        <div class="split" style="margin-top:10px;">
-          <div>
-            <label for="sHours">Hours slept last night</label>
-            <input id="sHours" type="number" min="0" max="16" step="0.5" placeholder="e.g., 7.5" />
-            <label for="sQuality">Sleep quality</label>
-            <select id="sQuality">
-              <option value="">Choose</option>
-              <option>Great</option><option>Okay</option><option>Not good</option>
-            </select>
-            <div class="row" style="margin-top:10px;">
-              <button class="btn primary" onclick="saveSleep()">Save sleep</button>
-            </div>
-
-            <div class="pill-note" style="margin-top:10px;">
-              <b>Last:</b> <span id="sLast">–</span><br/>
-              <span id="sTip" class="fineprint"></span>
-            </div>
-          </div>
-
-          <div>
-            <h2 style="font-size:1rem; margin:0 0 6px;">Wind-down plan</h2>
-            <p class="fineprint" style="margin:0;">Pick one tiny routine for tonight.</p>
-            <ul style="margin:10px 0 0; color:var(--muted); line-height:1.7; font-weight:780;">
-              <li>Put phone away 20 minutes early</li>
-              <li>60-second breathing</li>
-              <li>Drink water (not too much late night)</li>
-              <li>Pack bag / plan tomorrow (2 minutes)</li>
-            </ul>
-            <div class="divider"></div>
-            <div class="row" style="justify-content:space-between;">
-              <span class="badge">Goal: <b id="sleepGoal">8</b>h</span>
-              <button class="btn small ghost" onclick="editSleepGoal()">Edit goal</button>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <!-- CALM -->
-      <section class="card hide" id="st-view-calm" style="margin-top:12px;">
-        <h2>Calm toolkit</h2>
-        <p>Quick tools for stress, anger, sadness, and overthinking.</p>
-
-        <div class="gamebox" style="margin-top:10px;">
-          <div class="row" style="justify-content:space-between; align-items:center;">
+    <main role="main">
+      <div class="grid">
+        <section class="card" id="leftCard">
+          <div class="card-header">
             <div>
-              <div class="badge">Breathing guide</div>
-              <p class="fineprint" style="margin:8px 0 0;">Follow the rhythm: breathe in… hold… breathe out…</p>
+              <h2 id="pageTitle">Sign in</h2>
+              <p id="pageSubtitle">Choose your role. This pilot is non-clinical and designed for wellbeing awareness, positive habits, and self-learning.</p>
             </div>
-            <div class="orb" style="width:90px;height:90px;"></div>
-          </div>
-          <div class="row" style="margin-top:10px;">
-            <button class="btn small ghost" onclick="breathTimer(60)">60s</button>
-            <button class="btn small ghost" onclick="breathTimer(120)">2m</button>
-            <button class="btn small ghost" onclick="breathTimer(0)">Stop</button>
-            <span class="badge">Timer: <span id="breathStatus">Off</span></span>
-          </div>
-        </div>
-
-        <div class="divider"></div>
-
-        <h2 style="font-size:1rem; margin:0 0 6px;">Choose a tool</h2>
-        <div class="chips">
-          <button class="chip" onclick="setCalmTool('54321')">5-4-3-2-1</button>
-          <button class="chip" onclick="setCalmTool('box')">Box Breathing</button>
-          <button class="chip" onclick="setCalmTool('reset')">✨ Reset Thought</button>
-          <button class="chip" onclick="setCalmTool('body')">Body Scan</button>
-        </div>
-        <div class="pill-note" id="calmOut" style="margin-top:10px;">Pick a tool above.</div>
-
-        <div class="divider"></div>
-        <div class="row" style="justify-content:space-between;">
-          <span class="badge">“<span id="quote">You’ve got this.</span>”</span>
-          <button class="btn small ghost" onclick="newQuote()">New quote</button>
-        </div>
-      </section>
-
-      <!-- ECO -->
-      <section class="card hide" id="st-view-eco" style="margin-top:12px;">
-        <h2>Eco-anxiety</h2>
-        <p>Feeling worried about the environment is common. The goal here is not to “stop caring”, but to turn worry into balance + doable actions.</p>
-
-        <div class="split" style="margin-top:10px;">
-          <div>
-            <h2 style="font-size:1rem; margin:0 0 6px;">1) Name the feeling</h2>
-            <p class="fineprint" style="margin:0;">Pick what’s closest. This stays private.</p>
-            <div class="chips" style="margin-top:10px;">
-              <button class="chip" onclick="setEcoFeeling('overwhelmed')">Overwhelmed</button>
-              <button class="chip" onclick="setEcoFeeling('sad')">Sad</button>
-              <button class="chip" onclick="setEcoFeeling('angry')">Angry</button>
-              <button class="chip" onclick="setEcoFeeling('guilty')">Guilty</button>
-              <button class="chip" onclick="setEcoFeeling('motivated')">Motivated</button>
-            </div>
-            <div class="pill-note" id="ecoFeelingOut" style="margin-top:10px;">Feeling: <b id="ecoFeeling">–</b></div>
-
-            <div class="divider"></div>
-
-            <h2 style="font-size:1rem; margin:0 0 6px;">2) Helpful thoughts (60 seconds)</h2>
-            <div class="pill-note" id="ecoReframe">
-              “I can’t fix everything alone — but small consistent actions matter. I can focus on what I control, and ask for help when I need it.”
-            </div>
-            <div class="row" style="margin-top:10px;">
-              <button class="btn small ghost" onclick="ecoNewReframe()">New reframe</button>
-              <button class="btn small ghost" onclick="showStudentView('calm')">Use calm tool</button>
+            <div id="roleBadgeWrap" style="display:none">
+              <span class="badge" id="roleBadge">Role</span>
             </div>
           </div>
+          <div class="card-body" id="mainBody"></div>
+        </section>
 
-          <div>
-            <h2 style="font-size:1rem; margin:0 0 6px;">3) Action list (doable this week)</h2>
-            <p class="fineprint" style="margin:0;">Mark what you did. This updates your dashboard + school totals (aggregated on this device).</p>
-
-            <ul class="list" id="ecoList" style="margin-top:10px;"></ul>
-
-            <div class="row" style="justify-content:space-between; margin-top:6px;">
-              <span class="badge">Done this week: <span id="ecoDone">0</span></span>
-              <button class="btn small ghost" onclick="ecoResetWeek()">Reset week</button>
+        <aside class="right-col">
+          <section class="card">
+            <div class="card-header">
+              <div>
+                <h2>Quick clarity</h2>
+                <p>What this pilot does (and doesn’t) do — in plain language.</p>
+              </div>
             </div>
-
-            <div class="divider"></div>
-            <h2 style="font-size:1rem; margin:0 0 6px;">If it feels heavy</h2>
-            <div class="pill-note">
-              Try the 3-step rule: <b>1</b> tiny action, <b>1</b> calm tool, <b>1</b> connection (talk to a friend/teacher/parent).
+            <div class="card-body">
+              <div class="stack">
+                <div class="note ok">
+                  <strong>What MindUrMind is</strong><br>
+                  A school wellbeing awareness and self-learning initiative: emotional literacy, positive habits, and reflection prompts.
+                </div>
+                <div class="note warn">
+                  <strong>What it is not</strong><br>
+                  No clinical assessment, diagnosis, therapy, or risk scoring. Not a substitute for professional support.
+                </div>
+                <div class="note">
+                  <strong>Where data lives</strong><br>
+                  Student reflections are stored on this device only. School insights (if viewed) are aggregated locally from participating students on the same device — no cloud upload.
+                </div>
+                <div class="divider"></div>
+                <div class="help">If you ever feel unsafe or in immediate danger, contact local emergency services or a trusted adult right away.</div>
+              </div>
             </div>
-          </div>
-        </div>
-      </section>
-
-      <!-- GAMES -->
-      <section class="card hide" id="st-view-game" style="margin-top:12px;">
-        <h2>Games</h2>
-        <p>Short, calming games for coping skills and confidence. These are for learning — not diagnosis.</p>
-
-        <div class="split" style="margin-top:10px;">
-          <div class="gamebox">
-            <div class="row" style="justify-content:space-between;">
-              <span class="badge">Emotion Quest (30 levels)</span>
-              <button class="btn small ghost" onclick="restartQuest()">Restart</button>
-            </div>
-            <p class="fineprint" style="margin:10px 0 0;">Choose the healthiest response in school-life scenarios.</p>
-            <div class="divider"></div>
-            <div class="row" style="justify-content:space-between;">
-              <div class="badge">Level <span id="qLevel">1</span></div>
-              <div class="badge">Score <span id="qScore">0</span></div>
-              <div class="badge">Streak <span id="qStreak">0</span></div>
-            </div>
-            <div class="pill-note" id="qScenario" style="margin-top:10px;">Loading…</div>
-            <div class="chips" id="qChoices" style="margin-top:10px;"></div>
-            <div class="pill-note" id="qFeedback" style="margin-top:10px;"> </div>
-          </div>
-
-          <div class="gamebox">
-            <div class="row" style="justify-content:space-between;">
-              <span class="badge">Calm Clicks (60s)</span>
-              <button class="btn small ghost" onclick="startCalmClicks()">Start</button>
-            </div>
-            <p class="fineprint" style="margin:10px 0 0;">Click the floating bubbles slowly (not fast). The goal is calm control.</p>
-            <div class="divider"></div>
-            <div class="row" style="justify-content:space-between;">
-              <div class="badge">Time: <span id="ccTime">–</span></div>
-              <div class="badge">Score: <span id="ccScore">0</span></div>
-              <div class="badge">Best: <span id="ccBest">0</span></div>
-            </div>
-            <div class="gamebox" id="ccArea" style="margin-top:10px; min-height:160px; background: rgba(255,255,255,.68);"></div>
-            <div class="pill-note" style="margin-top:10px;">
-              Tip: inhale… exhale… click… (slow rhythm). This trains regulation.
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <!-- JOURNAL -->
-      <section class="card hide" id="st-view-journal" style="margin-top:12px;">
-        <h2>Journal</h2>
-        <p>Private space for thoughts. You can also add a gratitude line.</p>
-
-        <label for="jEntry">Journal entry (private)</label>
-        <textarea id="jEntry" placeholder="Write anything. Short is okay."></textarea>
-
-        <label for="jGrat">1 gratitude line (optional)</label>
-        <input id="jGrat" placeholder="One good thing today…" />
-
-        <div class="row" style="margin-top:10px;">
-          <button class="btn primary" onclick="saveJournal()">Save</button>
-          <button class="btn ghost" onclick="journalPrompt()">Prompt</button>
-          <span class="badge">Entries: <span id="jCount">0</span></span>
-        </div>
-
-        <div class="divider"></div>
-        <h2 style="font-size:1rem; margin:0 0 6px;">Recent entries</h2>
-        <ul class="list" id="jList"></ul>
-      </section>
-
-      <!-- INSIGHTS -->
-      <section class="card hide" id="st-view-insights" style="margin-top:12px;">
-        <h2>Insights</h2>
-        <p>Trends from your logs.</p>
-
-        <div class="split" style="margin-top:10px;">
-          <div class="mini">
-            <h2 style="font-size:1rem; margin:0 0 6px;">Mood trend (last 7 entries)</h2>
-            <canvas id="moodChart" width="500" height="240" style="width:100%; height:auto; border-radius:16px; border:1px solid var(--line); background:rgba(255,255,255,.9);"></canvas>
-            <p class="fineprint" id="moodTrendNote">Log moods to see a trend.</p>
-          </div>
-          <div class="mini">
-            <h2 style="font-size:1rem; margin:0 0 6px;">Sleep trend (last 7 entries)</h2>
-            <canvas id="sleepChart" width="500" height="240" style="width:100%; height:auto; border-radius:16px; border:1px solid var(--line); background:rgba(255,255,255,.9);"></canvas>
-            <p class="fineprint" id="sleepTrendNote">Log sleep to see a trend.</p>
-          </div>
-        </div>
-
-        <div class="divider"></div>
-        <div class="kpi">
-          <div class="k"><div class="big" id="pMood">0</div><div class="small">Mood logs</div></div>
-          <div class="k"><div class="big" id="pSleep">0</div><div class="small">Sleep logs</div></div>
-          <div class="k"><div class="big" id="pTasks">0</div><div class="small">Tasks done</div></div>
-        </div>
-        <div class="kpi" style="margin-top:10px;">
-          <div class="k"><div class="big" id="pHabits">0</div><div class="small">Habit points</div></div>
-          <div class="k"><div class="big" id="pEco">0</div><div class="small">Eco actions done (this week)</div></div>
-          <div class="k"><div class="big" id="pGame">0</div><div class="small">Emotion Quest score</div></div>
-        </div>
-      </section>
-
-      <!-- HELP -->
-      <section class="card hide" id="st-view-help" style="margin-top:12px;">
-        <h2>Help</h2>
-        <p>Tools, tips, and an AI-style coach for general guidance (no personal data sent anywhere).</p>
-
-        <div class="mini">
-          <h2 style="font-size:1rem; margin:0 0 6px;">Wellbeing coach (offline)</h2>
-          <p class="fineprint" style="margin:0;">Ask about stress, sleep, confidence, focus, friendships, anger, or eco-anxiety.</p>
-
-          <div class="row" style="margin-top:10px;">
-            <label class="sr-only" for="coachInput">Your question</label>
-            <input id="coachInput" placeholder="Type a question…" />
-            <button class="btn primary" onclick="coachSend()">Send</button>
-          </div>
-          <div class="pill-note" id="coachOut" style="margin-top:10px;"> </div>
-
-          <div class="safety" style="margin-top:10px;">
-            <b>Safety:</b> If you feel unsafe or think you might harm yourself, stop and tell a trusted adult immediately. If there is immediate danger, contact local emergency services.
-          </div>
-        </div>
-
-        <div class="divider"></div>
-
-        <h2 style="font-size:1rem; margin:0 0 6px;">Self-help quick tips</h2>
-        <ul style="margin:8px 0 0; color:var(--muted); line-height:1.7; font-weight:780;">
-          <li>Stress: 60 seconds breathing + one tiny task.</li>
-          <li>Anger: pause, 3 breaths, step away for 2 minutes.</li>
-          <li>Sad: talk to someone safe; do one gentle activity.</li>
-          <li>Overthinking: write worry → write a fair response.</li>
-          <li>Peer pressure: practise “No, I’m not comfortable.”</li>
-        </ul>
-
-        <div class="divider"></div>
-        <h2 style="font-size:1rem; margin:0 0 6px;">Resources library</h2>
-        <ul style="margin:8px 0 0; color:var(--muted); line-height:1.7; font-weight:780;">
-          <li>Understanding emotions (basic)</li>
-          <li>Exam stress plan (steps)</li>
-          <li>Healthy screen habits</li>
-          <li>Friendship skills</li>
-          <li>Better sleep routine</li>
-          <li>Eco-anxiety: turning worry into action</li>
-        </ul>
-
-        <div class="divider"></div>
-        <div class="row">
-          <button class="btn ghost" onclick="showStudentView('mood')">Quick action: Mood</button>
-          <button class="btn ghost" onclick="showStudentView('study')">Quick action: Focus</button>
-          <button class="btn ghost" onclick="showStudentView('calm')">Quick action: Calm</button>
-          <button class="btn ghost" onclick="showStudentView('eco')">Quick action: Eco</button>
-        </div>
-
-        <div class="divider"></div>
-        <div class="pill-note">
-          Privacy note: Student notes and journal content stay inside the student profile on this device. School insights are aggregated totals only — no names and no private text.
-        </div>
-      </section>
-    </section>
-
-    <!-- SCHOOL -->
-    <section class="card hide" id="schoolApp">
-      <div class="row" style="justify-content:space-between; align-items:center;">
-        <div>
-          <h2 id="schHello">School view</h2>
-          <p class="fineprint">Overall wellbeing insights (aggregated on this device only).</p>
-        </div>
-        <span class="badge">No individual monitoring</span>
+          </section>
+        </aside>
       </div>
+    </main>
 
-      <div class="tabs" style="margin-top:12px;">
-        <div class="tab active" data-view="dash" onclick="showSchoolView('dash')">📊 Insights</div>
-        <div class="tab" data-view="actions" onclick="showSchoolView('actions')">✅ Actions</div>
-      </div>
-
-      <section class="card hide" id="sc-view-dash" style="margin-top:12px;">
-        <h2>School insights</h2>
-        <p>Aggregated trends to support planning (on this device).</p>
-
-        <div class="kpi">
-          <div class="k"><div class="big" id="sKStudents">0</div><div class="small">Students on this device</div></div>
-          <div class="k"><div class="big" id="sKMoods">0</div><div class="small">Mood check-ins</div></div>
-          <div class="k"><div class="big" id="sKSleep">–</div><div class="small">Average sleep (latest 7 logs)</div></div>
-        </div>
-
-        <div class="kpi" style="margin-top:10px;">
-          <div class="k"><div class="big" id="sKEco">0</div><div class="small">Eco actions done (this week)</div></div>
-          <div class="k"><div class="big" id="sKFocus">0</div><div class="small">Total focus points</div></div>
-          <div class="k"><div class="big" id="sKHabits">0</div><div class="small">Total habit points</div></div>
-        </div>
-
-        <div class="split" style="margin-top:12px;">
-          <div class="mini">
-            <h2 style="font-size:1rem; margin:0 0 6px;">Mood distribution</h2>
-            <canvas id="schMoodChart" width="500" height="240" style="width:100%; height:auto; border-radius:16px; border:1px solid var(--line); background:rgba(255,255,255,.9);"></canvas>
-            <p class="fineprint" id="schMoodNote">No data yet.</p>
-          </div>
-
-          <div class="mini">
-            <h2 style="font-size:1rem; margin:0 0 6px;">Top mood causes (categories)</h2>
-            <ul class="list" id="schCauseList"></ul>
-          </div>
-        </div>
-
-        <div class="divider"></div>
-        <h2 style="font-size:1rem; margin:0 0 6px;">Eco actions (top)</h2>
-        <ul class="list" id="schEcoList"></ul>
-      </section>
-
-      <section class="card hide" id="sc-view-actions" style="margin-top:12px;">
-        <h2>Recommended actions</h2>
-        <p>Ideas based on overall trends.</p>
-        <ul style="margin:8px 0 0; color:var(--muted); line-height:1.7; font-weight:780;">
-          <li>If “Exams / homework” is high: coordinate assessment calendar; add study skills session.</li>
-          <li>If sleep average is low: run a “sleep & focus” awareness week.</li>
-          <li>If “Friendship” is high: peer support + anti-bullying activities + empathy game day.</li>
-          <li>Offer short breathing sessions at start of class (60 seconds).</li>
-          <li>Add eco-anxiety literacy: turn worry into action + hope (projects, clean-ups, gardening, sustainability week).</li>
-          <li>Build safe reporting pathways outside the app if needed.</li>
-        </ul>
-
-        <div class="divider"></div>
-        <div class="pill-note">
-          Note: This app is a wellbeing education pilot. It does not diagnose, assess risk clinically, or replace professional support.
-        </div>
-      </section>
-    </section>
-  </main>
-</div>
-
-<div class="toast" id="toast">Saved</div>
+    <footer role="contentinfo">
+      <div><span class="mono">MindUrMind Pilot</span> • Built for school wellbeing awareness • Device-only reflections • Local-only aggregation for school view</div>
+    </footer>
+  </div>
 
 <script>
-/* MindUrMind - privacy-first pilot (on-device) */
-/* Data model v2 stored in localStorage under KEY */
-const KEY = "mindurmind_v2";
-const $ = (id)=>document.getElementById(id);
+(function(){
+  "use strict";
 
-const DEFAULT = {
-  version: 2,
-  active: { role: null, email: null },
-  profiles: {},        // student profiles by email
-  school: { email: null },
-  ui: { sleepGoal: 8, lastRole: "student" },
-  game: { calmClicksBest: 0 }
-};
-
-let state = loadState();
-let timer = { mode:"focus", seconds:25*60, running:false, tick:null };
-let breath = { tick:null, left:0 };
-let calmClicks = { running:false, left:0, score:0, tick:null };
-let ecoFeelings = ["overwhelmed","sad","angry","guilty","motivated"];
-let ecoReframes = [
-  "I can’t fix everything alone — but small consistent actions matter. I’ll focus on what I control today.",
-  "Caring is a strength. I can take one doable step and also rest when I need to.",
-  "I can turn worry into learning: understand the issue, then choose one action with friends.",
-  "I can’t do everything — but I can do something, and that is meaningful.",
-  "When I feel stuck, I will connect: talk to a trusted adult or friend and choose one small action."
-];
-
-const ECO_ACTIONS = [
-  {id:"eco1", text:"Carry a reusable bottle today"},
-  {id:"eco2", text:"Switch off lights/fans when leaving a room"},
-  {id:"eco3", text:"Bring a reusable bag / avoid single-use plastic"},
-  {id:"eco4", text:"Pick up 5 pieces of litter (with gloves if needed)"},
-  {id:"eco5", text:"Save water: 2-minute shorter shower / tap off"},
-  {id:"eco6", text:"Learn one climate fact from a reliable source"},
-  {id:"eco7", text:"Talk to a friend about one hopeful action"},
-  {id:"eco8", text:"Help plant/maintain something green (home/school)"},
-];
-
-const QUOTES = [
-  "Your best is enough for today.",
-  "Small steps count.",
-  "Feelings are visitors — you can guide them.",
-  "Breathe. Then do the next right thing.",
-  "You can be kind to yourself and still grow."
-];
-
-const JOURNAL_PROMPTS = [
-  "What’s one small win from today?",
-  "What would I say to a friend feeling like me?",
-  "What’s one thing I can control right now?",
-  "What do I need: rest, help, or a plan?",
-  "Name the feeling. Name one next step."
-];
-
-/* Emotion Quest (30 levels) */
-const QUEST = buildQuest();
-
-function buildQuest(){
-  const q = [];
-  const base = [
-    {s:"You feel stressed before an exam.", a:[
-      ["Panic and scroll social media for 30 minutes", false, "Avoiding increases stress later."],
-      ["Take 60 seconds breathing, then pick 1 small topic to review", true, "Great: calm first, then micro-step."],
-      ["Skip the exam and pretend you’re sick", false, "Avoidance can make things harder."],
-    ]},
-    {s:"A friend ignores your message.", a:[
-      ["Assume they hate you and send 10 angry texts", false, "That escalates."],
-      ["Pause, then ask once: “Hey, are you okay?”", true, "Curious, calm, respectful."],
-      ["Post about them online", false, "Public conflict hurts both."],
-    ]},
-    {s:"You made a mistake in class and feel embarrassed.", a:[
-      ["Tell yourself you’re useless forever", false, "That’s an unfair thought."],
-      ["Say: “Mistakes are normal.” Then try again", true, "Growth mindset."],
-      ["Stop participating for the rest of the week", false, "Avoidance reduces confidence."],
-    ]},
-    {s:"You feel eco-anxious after seeing bad news.", a:[
-      ["Doomscroll for an hour", false, "Too much exposure can increase anxiety."],
-      ["Do one small action + take a break from news", true, "Action + balance helps."],
-      ["Decide nothing matters", false, "Hopelessness isn’t true or helpful."],
-    ]},
-  ];
-  for(let i=0;i<30;i++){
-    const b = base[i % base.length];
-    q.push({
-      level: i+1,
-      scenario: b.s,
-      answers: shuffle([...b.a]).map(([t,good,why])=>({text:t, good, why}))
-    });
-  }
-  return q;
-}
-
-/* ---------- storage ---------- */
-function loadState(){
-  try{
-    const raw = localStorage.getItem(KEY);
-    if(!raw) return structuredClone(DEFAULT);
-    const obj = JSON.parse(raw);
-    // merge defaults shallowly
-    return {
-      ...structuredClone(DEFAULT),
-      ...obj,
-      active: { ...structuredClone(DEFAULT.active), ...(obj.active||{}) },
-      ui: { ...structuredClone(DEFAULT.ui), ...(obj.ui||{}) },
-      game: { ...structuredClone(DEFAULT.game), ...(obj.game||{}) }
-    };
-  }catch(e){
-    console.warn("loadState failed", e);
-    return structuredClone(DEFAULT);
-  }
-}
-function saveState(){
-  localStorage.setItem(KEY, JSON.stringify(state));
-}
-function structuredClone(x){ return JSON.parse(JSON.stringify(x)); }
-function toast(msg){
-  const t = $("toast");
-  t.textContent = msg;
-  t.classList.add("on");
-  setTimeout(()=>t.classList.remove("on"), 1600);
-}
-
-/* ---------- auth + routing ---------- */
-let currentRole = state.ui.lastRole || "student";
-function setRole(role){
-  currentRole = role;
-  state.ui.lastRole = role;
-  saveState();
-  document.querySelectorAll("#auth .tab").forEach(el=>{
-    el.classList.toggle("active", el.dataset.role === role);
-  });
-  $("studentAuth").style.display = role === "student" ? "" : "none";
-  $("schoolAuth").style.display = role === "school" ? "" : "none";
-}
-
-function setSignedInUI(on, label){
-  $("btnSignOut").disabled = !on;
-  $("statusPill").textContent = on ? label : "Signed out";
-}
-
-function signInStudent(){
-  const email = ($("stEmail").value||"").trim().toLowerCase();
-  const name = ($("stName").value||"").trim();
-  const grade = ($("stGrade").value||"").trim();
-  if(!email || !email.includes("@")) return toast("Enter a valid student email");
-  if(!name) return toast("Enter your name");
-  if(!grade) return toast("Select a grade");
-
-  if(!state.profiles[email]){
-    state.profiles[email] = {
-      email, name, grade,
-      created: Date.now(),
-      moodLogs: [],
-      sleepLogs: [],
-      tasks: [],
-      habits: { water:{streak:0,last:0}, move:{streak:0,last:0}, kind:{streak:0,last:0}, points:0 },
-      journal: [],
-      eco: { weekId: currentWeekId(), feeling:null, actions:{} },
-      focus: { points:0 },
-      quest: { level:1, score:0, streak:0 },
-      garden: { pct: 0 }
-    };
-  }else{
-    // update name/grade in case it changed
-    state.profiles[email].name = name;
-    state.profiles[email].grade = grade;
-  }
-
-  state.active = { role:"student", email };
-  saveState();
-  boot();
-  toast("Welcome back");
-}
-
-function signInSchool(){
-  const email = ($("scEmail").value||"").trim().toLowerCase();
-  if(!email || !email.includes("@")) return toast("Enter a valid school email");
-  state.school.email = email;
-  state.active = { role:"school", email };
-  saveState();
-  boot();
-  toast("School view ready");
-}
-
-function signOut(){
-  state.active = { role:null, email:null };
-  saveState();
-  stopTimer();
-  stopBreath();
-  stopCalmClicks();
-  boot();
-  toast("Signed out");
-}
-
-function autofill(which){
-  if(which==="student"){
-    $("stEmail").value = "student"+Math.floor(Math.random()*90+10)+"@example.com";
-    $("stName").value = ["Aanya","Ravi","Sara","Omar","Diya","Zain"][Math.floor(Math.random()*6)];
-    $("stGrade").value = "Grade "+(Math.floor(Math.random()*8)+5);
-  }else{
-    $("scEmail").value = "wellbeing@school.ae";
-  }
-  toast("Auto-filled");
-}
-
-/* ---------- boot ---------- */
-function boot(){
-  // auth visibility
-  const signedIn = !!state.active.role;
-  $("auth").classList.toggle("hide", signedIn);
-  $("studentApp").classList.toggle("hide", !(signedIn && state.active.role==="student"));
-  $("schoolApp").classList.toggle("hide", !(signedIn && state.active.role==="school"));
-
-  if(!signedIn){
-    setSignedInUI(false);
-    setRole(state.ui.lastRole || "student");
-    return;
-  }
-
-  if(state.active.role==="student"){
-    const p = getProfile();
-    setSignedInUI(true, "Student • "+p.name+" • "+p.grade);
-    // student header badges
-    $("hello").textContent = "Hi, "+p.name+"!";
-    $("helloSub").textContent = "Welcome back. Pick one small step.";
-    refreshStudentTop();
-    // default view
-    showStudentView("dash");
-    // lists
-    renderTasks();
-    renderJournal();
-    renderEco();
-    // charts
-    drawStudentCharts();
-    // game
-    renderQuest();
-    // calm clicks best
-    $("ccBest").textContent = state.game.calmClicksBest || 0;
-  }else{
-    setSignedInUI(true, "School • "+(state.school.email||state.active.email));
-    showSchoolView("dash");
-    drawSchoolCharts();
-    renderSchoolLists();
-  }
-}
-boot();
-
-/* ---------- helpers ---------- */
-function getProfile(){
-  const email = state.active.email;
-  const p = state.profiles[email];
-  if(!p) throw new Error("Missing profile");
-  // week roll-over
-  const w = currentWeekId();
-  if(p.eco.weekId !== w){
-    p.eco.weekId = w;
-    p.eco.actions = {};
-  }
-  return p;
-}
-function nowDateLabel(ts=Date.now()){
-  const d = new Date(ts);
-  return d.toLocaleString(undefined, {weekday:"short", month:"short", day:"numeric", hour:"2-digit", minute:"2-digit"});
-}
-function clamp(n,min,max){ return Math.max(min, Math.min(max,n)); }
-function currentWeekId(){
-  const d = new Date();
-  // ISO-ish week key: yyyy-Www using simple method (Monday as first day)
-  const date = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
-  const dayNum = date.getUTCDay() || 7;
-  date.setUTCDate(date.getUTCDate() + 4 - dayNum);
-  const yearStart = new Date(Date.UTC(date.getUTCFullYear(),0,1));
-  const weekNo = Math.ceil((((date - yearStart) / 86400000) + 1) / 7);
-  return date.getUTCFullYear()+"-W"+String(weekNo).padStart(2,"0");
-}
-function shuffle(arr){
-  for(let i=arr.length-1;i>0;i--){
-    const j=Math.floor(Math.random()*(i+1));
-    [arr[i],arr[j]]=[arr[j],arr[i]];
-  }
-  return arr;
-}
-
-/* ---------- student view ---------- */
-function showStudentView(view){
-  document.querySelectorAll("#studentApp .tab").forEach(el=>{
-    el.classList.toggle("active", el.dataset.view === view);
-  });
-  const ids = ["dash","mood","study","sleep","calm","eco","game","journal","insights","help"];
-  ids.forEach(v=> $("st-view-"+v).classList.toggle("hide", v !== view));
-
-  // quick refresh when switching
-  if(view==="dash"){ refreshStudentTop(); refreshEcoDashboard(); refreshGardenUI(); }
-  if(view==="study"){ renderTasks(); }
-  if(view==="journal"){ renderJournal(); }
-  if(view==="eco"){ renderEco(); }
-  if(view==="insights"){ drawStudentCharts(); refreshStudentProgress(); }
-  if(view==="game"){ renderQuest(); }
-}
-
-function refreshStudentTop(){
-  const p = getProfile();
-  const lastMood = p.moodLogs.at(-1);
-  const lastSleep = p.sleepLogs.at(-1);
-  $("topMood").textContent = "Mood: " + (lastMood ? lastMood.mood : "–");
-  $("topFocus").textContent = "Focus: " + (p.focus.points || 0);
-  $("topSleep").textContent = "Sleep: " + (lastSleep ? (lastSleep.hours+"h") : "–");
-  $("topBadges").textContent = "Badges: " + calcBadges(p).length;
-  refreshEcoDashboard();
-  refreshGardenUI();
-  refreshStudentProgress();
-}
-
-function refreshStudentProgress(){
-  const p = getProfile();
-  $("pMood").textContent = p.moodLogs.length;
-  $("pSleep").textContent = p.sleepLogs.length;
-  $("pTasks").textContent = p.tasks.filter(t=>t.done).length;
-  $("pHabits").textContent = p.habits.points || 0;
-  $("pEco").textContent = Object.keys(p.eco.actions||{}).length;
-  $("pGame").textContent = p.quest.score || 0;
-}
-
-function calcBadges(p){
-  const b = [];
-  if(p.moodLogs.length >= 3) b.push("Mood Starter");
-  if(p.sleepLogs.length >= 3) b.push("Sleep Tracker");
-  if((p.focus.points||0) >= 50) b.push("Focus Builder");
-  if((p.habits.points||0) >= 20) b.push("Habit Hero");
-  if(Object.keys(p.eco.actions||{}).length >= 3) b.push("Eco Helper");
-  if((p.quest.score||0) >= 10) b.push("Coping Learner");
-  return b;
-}
-
-/* ---------- quick actions ---------- */
-function quickAction(kind){
-  if(state.active.role!=="student") return;
-  if(kind==="mood"){
-    // quick mood: okay, intensity 3
-    $("moodPick").value = "Okay";
-    $("mIntensity").value = 3; $("mIntOut").textContent = "3";
-    $("mCause").value = "";
-    $("mNote").value = "";
-    saveMood();
-  }else if(kind==="focus"){
-    // quick 1-minute plan
-    $("stressOut").textContent = "Pick ONE task, set a 10 minute timer, start with the easiest first step.";
-    toast("Micro-plan ready");
-  }else if(kind==="winddown"){
-    $("sTip").textContent = "Tonight: phone away 20 minutes early + 60 seconds breathing.";
-    toast("Wind-down idea set");
-  }
-}
-
-/* ---------- mood ---------- */
-function saveMood(){
-  const p = getProfile();
-  const mood = $("moodPick").value;
-  if(!mood) return toast("Choose a mood");
-  const intensity = Number($("mIntensity").value || 3);
-  const cause = $("mCause").value || "";
-  const note = ($("mNote").value||"").trim();
-
-  p.moodLogs.push({ mood, intensity, cause, note, ts: Date.now() });
-  if(p.moodLogs.length > 50) p.moodLogs.shift();
-  saveState();
-
-  $("mLast").textContent = mood + " ("+intensity+"/5) • " + nowDateLabel();
-  $("mSuggestion").textContent = moodSuggestion(mood, intensity, cause);
-  toast("Mood saved");
-  refreshStudentTop();
-  drawStudentCharts();
-  drawSchoolCharts();
-  renderSchoolLists();
-}
-
-function moodSuggestion(mood, intensity, cause){
-  const base = {
-    "Great":"Keep it simple: do one good habit and protect sleep.",
-    "Okay":"Choose one small goal and finish it. Momentum beats perfection.",
-    "Stressed":"60 seconds breathing, then pick one tiny step.",
-    "Sad":"Talk to someone safe + do one gentle activity (walk, music, shower).",
-    "Angry":"Pause, breathe 3 times, step away for 2 minutes.",
-    "Anxious":"Name 3 facts you know, then one small action you can control.",
-    "Tired":"Drink water, stretch, and protect bedtime tonight.",
-    "Lonely":"Send one kind message or join one small activity."
-  }[mood] || "Take one small step.";
-  const extra = intensity >= 4 ? " Keep it extra small today." : "";
-  const tag = cause ? (" Cause: "+cause+".") : "";
-  return base + extra + tag;
-}
-function showMoodSuggestion(){
-  const mood = $("moodPick").value || "Okay";
-  const intensity = Number($("mIntensity").value || 3);
-  const cause = $("mCause").value || "";
-  $("mSuggestion").textContent = moodSuggestion(mood, intensity, cause);
-  toast("Suggestion shown");
-}
-
-/* ---------- habits ---------- */
-function sameDay(a,b){
-  const da=new Date(a), db=new Date(b);
-  return da.getFullYear()===db.getFullYear() && da.getMonth()===db.getMonth() && da.getDate()===db.getDate();
-}
-function toggleHabit(kind){
-  const p = getProfile();
-  const h = p.habits[kind];
-  const now = Date.now();
-  if(h.last && sameDay(h.last, now)){
-    // undo today
-    h.last = 0;
-    // decrease streak carefully (can't know previous days, so just reduce by 1 if >0)
-    h.streak = Math.max(0, h.streak-1);
-    p.habits.points = Math.max(0, (p.habits.points||0) - 1);
-    toast("Habit undone");
-  }else{
-    // mark today
-    // if last was yesterday, streak+1 else reset to 1
-    const yesterday = new Date(); yesterday.setDate(yesterday.getDate()-1);
-    if(h.last && sameDay(h.last, yesterday.getTime())) h.streak += 1;
-    else h.streak = Math.max(1, h.streak);
-    h.last = now;
-    p.habits.points = (p.habits.points||0) + 1;
-    toast("Nice! Habit done");
-    sparkAt($("st-view-dash"), 0.7);
-  }
-  saveState();
-  refreshHabitsUI();
-  refreshStudentTop();
-  drawSchoolCharts();
-  renderSchoolLists();
-}
-
-function refreshHabitsUI(){
-  const p = getProfile();
-  ["water","move","kind"].forEach(k=>{
-    const el = $("hb-"+k);
-    const last = p.habits[k].last;
-    el.classList.toggle("on", !!last && sameDay(last, Date.now()));
-  });
-  $("habitPts").textContent = p.habits.points ?? 0;
-}
-function sparkAt(container, intensity=1){
-  // small sparkles to reward action
-  if(!container) return;
-  const rect = container.getBoundingClientRect();
-  const count = Math.round(8*intensity);
-  for(let i=0;i<count;i++){
-    const s = document.createElement("div");
-    s.className = "spark";
-    s.style.left = (Math.random()*rect.width)+"px";
-    s.style.top = (Math.random()*80)+"px";
-    s.style.opacity = "0.9";
-    s.style.transform = "scale("+(Math.random()*1.3+0.6)+")";
-    s.style.background = ["rgba(251,191,36,.9)","rgba(96,165,250,.9)","rgba(52,211,153,.85)","rgba(167,139,250,.85)"][Math.floor(Math.random()*4)];
-    container.appendChild(s);
-    s.animate([
-      { transform:"translateY(0) scale(1)", opacity:0.9 },
-      { transform:"translateY(-40px) scale(0.7)", opacity:0.0 }
-    ], { duration: 700 + Math.random()*400, easing:"cubic-bezier(.2,.7,.2,1)"});
-    setTimeout(()=>s.remove(), 1200);
-  }
-}
-
-/* ---------- tasks ---------- */
-function addTask(){
-  const p = getProfile();
-  const subject = ($("tSubject").value||"").trim();
-  const task = ($("tTask").value||"").trim();
-  const due = $("tDue").value || "";
-  if(!subject || !task) return toast("Add subject + task");
-  p.tasks.unshift({ id: cryptoRandom(), subject, task, due, done:false, ts: Date.now() });
-  if(p.tasks.length > 80) p.tasks.pop();
-  $("tTask").value = "";
-  saveState();
-  renderTasks();
-  refreshStudentTop();
-  toast("Task added");
-}
-function toggleTask(id){
-  const p = getProfile();
-  const t = p.tasks.find(x=>x.id===id);
-  if(!t) return;
-  t.done = !t.done;
-  saveState();
-  renderTasks();
-  refreshStudentTop();
-  drawSchoolCharts();
-  renderSchoolLists();
-  if(t.done){ sparkAt($("st-view-study"), 0.5); }
-}
-function clearDoneTasks(){
-  const p = getProfile();
-  p.tasks = p.tasks.filter(t=>!t.done);
-  saveState();
-  renderTasks();
-  refreshStudentTop();
-  toast("Cleared");
-}
-function renderTasks(){
-  const p = getProfile();
-  $("taskCount").textContent = p.tasks.length;
-  const ul = $("taskList");
-  ul.innerHTML = "";
-  p.tasks.slice(0,20).forEach(t=>{
-    const li = document.createElement("li");
-    li.innerHTML = \`
-      <div style="min-width:0;">
-        <div style="font-weight:900;">\${escapeHtml(t.subject)} • \${escapeHtml(t.task)}</div>
-        <div class="fineprint">\${t.due ? ("Due: "+t.due+" • ") : ""}\${new Date(t.ts).toLocaleDateString()}</div>
-      </div>
-      <button class="btn small \${t.done ? "primary" : "ghost"}" onclick="toggleTask('\${t.id}')">\${t.done ? "Done ✓" : "Mark done"}</button>
-    \`;
-    ul.appendChild(li);
-  });
-}
-
-/* ---------- focus timer ---------- */
-function setTimerMode(mode){
-  timer.mode = mode;
-  const map = { focus:25*60, break:5*60, deep:45*60 };
-  timer.seconds = map[mode] || 25*60;
-  updateTimerUI();
-  ["focus","break","deep"].forEach(m=>{
-    $("mode"+capitalize(m)).classList.toggle("on", m===mode);
-  });
-  // chips selection
-  $("modeFocus").classList.toggle("on", mode==="focus");
-  $("modeBreak").classList.toggle("on", mode==="break");
-  $("modeDeep").classList.toggle("on", mode==="deep");
-}
-function startTimer(){
-  if(timer.running) return;
-  timer.running = true;
-  $("btnStartTimer").textContent = "Running…";
-  timer.tick = setInterval(()=>{
-    timer.seconds = Math.max(0, timer.seconds - 1);
-    updateTimerUI();
-    if(timer.seconds === 0){
-      stopTimer();
-      onTimerComplete();
-    }
-  }, 1000);
-}
-function pauseTimer(){
-  stopTimer(false);
-  toast("Paused");
-}
-function resetTimer(){
-  stopTimer(false);
-  setTimerMode(timer.mode);
-  toast("Reset");
-}
-function stopTimer(showToast=true){
-  if(timer.tick) clearInterval(timer.tick);
-  timer.tick = null;
-  timer.running = false;
-  $("btnStartTimer") && ($("btnStartTimer").textContent = "Start");
-  if(showToast) toast("Stopped");
-}
-function updateTimerUI(){
-  const mm = Math.floor(timer.seconds/60);
-  const ss = timer.seconds%60;
-  $("timerDisplay").textContent = String(mm).padStart(2,"0")+":"+String(ss).padStart(2,"0");
-  $("timerModeLabel").textContent = ({focus:"Focus",break:"Break",deep:"Deep"}[timer.mode] || "Focus");
-  if(state.active.role==="student"){
-    const p = getProfile();
-    $("focusPts").textContent = p.focus.points || 0;
-  }
-}
-function onTimerComplete(){
-  if(state.active.role!=="student") return;
-  const p = getProfile();
-  const add = timer.mode==="break" ? 1 : (timer.mode==="deep" ? 5 : 3);
-  p.focus.points = (p.focus.points||0) + add;
-  saveState();
-  updateTimerUI();
-  refreshStudentTop();
-  drawSchoolCharts();
-  renderSchoolLists();
-  toast("Nice work! +"+add+" focus points");
-  sparkAt($("st-view-study"), 0.9);
-}
-
-/* ---------- stress helper ---------- */
-function stressHelper(which){
-  const out = {
-    plan:"Write the next 3 steps. Make step 1 only 2 minutes.",
-    start:"Start badly for 2 minutes. The goal is to begin, not to be perfect.",
-    calm:"60 seconds breathing. Then choose the easiest first step."
-  }[which] || "Choose one.";
-  $("stressOut").textContent = out;
-  toast("Helper set");
-}
-
-/* ---------- sleep ---------- */
-function saveSleep(){
-  const p = getProfile();
-  const hours = Number($("sHours").value);
-  const quality = $("sQuality").value;
-  if(!hours || hours<0 || hours>16) return toast("Enter hours 0–16");
-  if(!quality) return toast("Choose sleep quality");
-  p.sleepLogs.push({ hours, quality, ts: Date.now() });
-  if(p.sleepLogs.length > 50) p.sleepLogs.shift();
-  saveState();
-  $("sLast").textContent = hours+"h • "+quality+" • "+nowDateLabel();
-  $("sTip").textContent = sleepTip(hours, quality);
-  toast("Sleep saved");
-  refreshStudentTop();
-  drawStudentCharts();
-  drawSchoolCharts();
-}
-function sleepTip(hours, quality){
-  if(hours < 6) return "Try: earlier screen-off + consistent bedtime. Even +30 minutes helps.";
-  if(hours < state.ui.sleepGoal) return "Close to goal. Aim for same sleep time tonight.";
-  return "Nice. Protect this routine — it supports mood + focus.";
-}
-function editSleepGoal(){
-  const g = prompt("Sleep goal hours (e.g., 8):", String(state.ui.sleepGoal || 8));
-  if(g===null) return;
-  const v = clamp(Number(g), 6, 10);
-  state.ui.sleepGoal = v;
-  saveState();
-  $("sleepGoal").textContent = v;
-  toast("Goal updated");
-}
-
-/* ---------- calm tools ---------- */
-function setCalmTool(tool){
-  const text = {
-    "54321":"Name: 5 things you see, 4 you feel, 3 you hear, 2 you smell, 1 you taste. Slow breaths.",
-    "box":"Breathe in 4 • hold 4 • out 4 • hold 4. Repeat 4 times.",
-    "reset":"Write the worry. Then write a fair, kind response. Choose one small action.",
-    "body":"Scan head → shoulders → chest → hands → legs. Soften each area for 3 breaths."
-  }[tool] || "Pick a tool.";
-  $("calmOut").textContent = text;
-  toast("Tool ready");
-}
-function newQuote(){
-  $("quote").textContent = QUOTES[Math.floor(Math.random()*QUOTES.length)];
-  toast("New quote");
-}
-
-function breathTimer(seconds){
-  stopBreath();
-  if(seconds<=0){
-    $("breathStatus").textContent = "Off";
-    return;
-  }
-  breath.left = seconds;
-  $("breathStatus").textContent = seconds+"s";
-  breath.tick = setInterval(()=>{
-    breath.left -= 1;
-    $("breathStatus").textContent = breath.left+"s";
-    if(breath.left<=0){
-      stopBreath();
-      $("breathStatus").textContent = "Done";
-      toast("Breathing done");
-    }
-  }, 1000);
-}
-function stopBreath(){
-  if(breath.tick) clearInterval(breath.tick);
-  breath.tick = null;
-}
-
-/* ---------- eco ---------- */
-function renderEco(){
-  const p = getProfile();
-  // week rollover handled in getProfile
-  $("ecoFeeling").textContent = p.eco.feeling || "–";
-  const ul = $("ecoList");
-  ul.innerHTML = "";
-  ECO_ACTIONS.forEach(a=>{
-    const doneTs = p.eco.actions[a.id] || 0;
-    const li = document.createElement("li");
-    li.innerHTML = \`
-      <div style="min-width:0;">
-        <div style="font-weight:900;">\${escapeHtml(a.text)}</div>
-        <div class="fineprint">\${doneTs ? ("Done • "+new Date(doneTs).toLocaleDateString()) : "Not done yet"}</div>
-      </div>
-      <button class="btn small \${doneTs ? "primary" : "ghost"}" onclick="toggleEcoAction('\${a.id}')">\${doneTs ? "Done ✓" : "Mark done"}</button>
-    \`;
-    ul.appendChild(li);
-  });
-  $("ecoDone").textContent = Object.keys(p.eco.actions||{}).length;
-  refreshEcoDashboard();
-}
-function setEcoFeeling(feel){
-  const p = getProfile();
-  p.eco.feeling = feel;
-  saveState();
-  $("ecoFeeling").textContent = feel;
-  toast("Saved feeling");
-  // also add as mood cause category to school aggregation via mood logs (not necessary)
-}
-function ecoNewReframe(){
-  $("ecoReframe").textContent = ecoReframes[Math.floor(Math.random()*ecoReframes.length)];
-  toast("New reframe");
-}
-function toggleEcoAction(id){
-  const p = getProfile();
-  if(p.eco.weekId !== currentWeekId()){
-    p.eco.weekId = currentWeekId();
-    p.eco.actions = {};
-  }
-  if(p.eco.actions[id]){
-    delete p.eco.actions[id];
-    toast("Undone");
-  }else{
-    p.eco.actions[id] = Date.now();
-    toast("Action done 🌿");
-    sparkAt($("st-view-eco"), 0.8);
-  }
-  // small reward in garden
-  p.garden.pct = clamp((p.garden.pct||0) + (p.eco.actions[id]? 4 : -4), 0, 100);
-  saveState();
-  renderEco();
-  refreshStudentTop();
-  drawSchoolCharts();
-  renderSchoolLists();
-}
-function ecoResetWeek(){
-  const p = getProfile();
-  p.eco.weekId = currentWeekId();
-  p.eco.actions = {};
-  saveState();
-  renderEco();
-  toast("Week reset");
-  drawSchoolCharts();
-  renderSchoolLists();
-}
-function ecoQuickOne(){
-  // mark random undone action
-  const p = getProfile();
-  const undone = ECO_ACTIONS.filter(a=>!p.eco.actions[a.id]);
-  if(!undone.length) return toast("All actions done 🎉");
-  toggleEcoAction(undone[Math.floor(Math.random()*undone.length)].id);
-}
-function refreshEcoDashboard(){
-  if(state.active.role!=="student") return;
-  const p = getProfile();
-  const done = Object.keys(p.eco.actions||{}).length;
-  $("ecoDashDone").textContent = done;
-  const pct = Math.round((done / ECO_ACTIONS.length)*100);
-  $("ecoDashProg").style.width = pct+"%";
-  $("pEco").textContent = done;
-}
-
-/* ---------- garden ---------- */
-function refreshGardenUI(){
-  if(state.active.role!=="student") return;
-  const p = getProfile();
-  const pct = clamp(Number(p.garden.pct||0), 0, 100);
-  $("gardenPct").textContent = pct+"%";
-  $("gardenProg").style.width = pct+"%";
-  // adjust plant parts
-  $("stem").setAttribute("d", pct<30 ? "M60 86V74" : (pct<60 ? "M60 86V66" : "M60 86V58"));
-  $("bud").setAttribute("r", pct<60 ? 8 : 11);
-  $("leafL").style.opacity = pct<20 ? 0.25 : 1;
-  $("leafR").style.opacity = pct<20 ? 0.25 : 1;
-}
-function gardenBoost(){
-  const p = getProfile();
-  p.garden.pct = clamp((p.garden.pct||0) + 6, 0, 100);
-  saveState();
-  refreshGardenUI();
-  toast("Boosted 🌱");
-  sparkAt($("st-view-dash"), 0.7);
-}
-function gardenReset(){
-  const p = getProfile();
-  p.garden.pct = 0;
-  saveState();
-  refreshGardenUI();
-  toast("Reset");
-}
-
-/* ---------- journal ---------- */
-function saveJournal(){
-  const p = getProfile();
-  const entry = ($("jEntry").value||"").trim();
-  const grat = ($("jGrat").value||"").trim();
-  if(!entry && !grat) return toast("Write something (even 1 line)");
-  p.journal.unshift({ entry, grat, ts: Date.now() });
-  if(p.journal.length>60) p.journal.pop();
-  $("jEntry").value=""; $("jGrat").value="";
-  saveState();
-  renderJournal();
-  refreshStudentTop();
-  toast("Saved");
-}
-function journalPrompt(){
-  $("jEntry").value = JOURNAL_PROMPTS[Math.floor(Math.random()*JOURNAL_PROMPTS.length)];
-  $("jEntry").focus();
-  toast("Prompt added");
-}
-function renderJournal(){
-  const p = getProfile();
-  $("jCount").textContent = p.journal.length;
-  const ul = $("jList");
-  ul.innerHTML = "";
-  p.journal.slice(0,10).forEach(j=>{
-    const li = document.createElement("li");
-    li.innerHTML = \`
-      <div style="min-width:0;">
-        <div style="font-weight:900;">\${new Date(j.ts).toLocaleDateString()}</div>
-        <div class="fineprint">\${escapeHtml((j.entry||"").slice(0,160) || "(no text)")}</div>
-        \${j.grat ? \`<div class="fineprint">Gratitude: <b>\${escapeHtml(j.grat)}</b></div>\` : ""}
-      </div>
-    \`;
-    ul.appendChild(li);
-  });
-}
-
-/* ---------- coach (offline rules-based) ---------- */
-function coachSend(){
-  const q = ($("coachInput").value||"").trim();
-  if(!q) return toast("Type a question");
-  $("coachInput").value="";
-  const a = coachAnswer(q);
-  $("coachOut").textContent = a;
-  toast("Coach replied");
-}
-function coachAnswer(q){
-  const t = q.toLowerCase();
-  const say = (x)=>x;
-  if(t.includes("sleep")) return say("Try a 2-step plan: 1) screen-off 20 minutes earlier, 2) same bedtime for 3 days. If worry keeps you awake, write it down then write one small plan.");
-  if(t.includes("stress") || t.includes("exam")) return say("Stress tip: do 60 seconds breathing, then choose ONE tiny task (2 minutes). Starting reduces stress more than thinking.");
-  if(t.includes("friend") || t.includes("bully") || t.includes("peer")) return say("Friendship tip: ask once calmly, set a boundary, and talk to a trusted adult if it’s repeated or unsafe. You deserve respectful friendships.");
-  if(t.includes("anger")) return say("Anger tip: pause, breathe 3 times, step away for 2 minutes. Then choose words that are firm but not hurtful.");
-  if(t.includes("anxiety") || t.includes("anxious")) return say("Anxiety tip: name 3 facts you know right now, then choose one action you control. If it’s too big, shrink it to a 2-minute step.");
-  if(t.includes("eco") || t.includes("climate") || t.includes("environment")) return say("Eco-anxiety tip: balance information + action. Limit doomscrolling, do one small action, and connect with others (clubs, projects). Caring is a strength.");
-  if(t.includes("focus") || t.includes("study")) return say("Focus tip: set a 10–25 minute timer, start with the easiest step, and stop when it ends. Consistency beats long sessions.");
-  return "Try this: 1) Name the feeling, 2) calm for 60 seconds, 3) choose one small helpful action. If you feel unsafe, tell a trusted adult immediately.";
-}
-
-/* ---------- Emotion Quest ---------- */
-function renderQuest(){
-  if(state.active.role!=="student") return;
-  const p = getProfile();
-  const level = clamp(p.quest.level || 1, 1, 30);
-  const q = QUEST[level-1];
-  $("qLevel").textContent = level;
-  $("qScore").textContent = p.quest.score || 0;
-  $("qStreak").textContent = p.quest.streak || 0;
-  $("qScenario").textContent = q.scenario;
-  const choices = $("qChoices");
-  choices.innerHTML = "";
-  q.answers.forEach((ans, idx)=>{
-    const b = document.createElement("button");
-    b.className = "chip";
-    b.textContent = ans.text;
-    b.onclick = ()=> chooseQuest(idx);
-    choices.appendChild(b);
-  });
-  $("qFeedback").textContent = " ";
-}
-function chooseQuest(idx){
-  const p = getProfile();
-  const level = clamp(p.quest.level || 1, 1, 30);
-  const q = QUEST[level-1];
-  const ans = q.answers[idx];
-  if(ans.good){
-    p.quest.score = (p.quest.score||0) + 1;
-    p.quest.streak = (p.quest.streak||0) + 1;
-    $("qFeedback").textContent = "✅ Good choice. " + ans.why;
-    sparkAt($("st-view-game"), 0.7);
-  }else{
-    p.quest.streak = 0;
-    $("qFeedback").textContent = "⚠️ Not ideal. " + ans.why;
-  }
-  p.quest.level = Math.min(30, level + 1);
-  // garden reward
-  p.garden.pct = clamp((p.garden.pct||0) + (ans.good ? 3 : 0), 0, 100);
-  saveState();
-  refreshStudentTop();
-  drawSchoolCharts();
-  setTimeout(renderQuest, 400);
-}
-function restartQuest(){
-  const p = getProfile();
-  p.quest = { level:1, score:0, streak:0 };
-  saveState();
-  renderQuest();
-  toast("Restarted");
-}
-
-/* ---------- Calm Clicks ---------- */
-function startCalmClicks(){
-  if(calmClicks.running) return;
-  calmClicks.running = true;
-  calmClicks.left = 60;
-  calmClicks.score = 0;
-  $("ccScore").textContent = 0;
-  $("ccTime").textContent = "60s";
-  const area = $("ccArea");
-  area.innerHTML = "";
-  spawnBubble();
-  calmClicks.tick = setInterval(()=>{
-    calmClicks.left -= 1;
-    $("ccTime").textContent = calmClicks.left+"s";
-    if(calmClicks.left <= 0){
-      stopCalmClicks();
-      onCalmClicksDone();
-    }else{
-      // spawn occasionally
-      if(Math.random() < 0.55) spawnBubble();
-    }
-  }, 1000);
-  toast("Go slow & steady");
-}
-function stopCalmClicks(){
-  if(calmClicks.tick) clearInterval(calmClicks.tick);
-  calmClicks.tick = null;
-  calmClicks.running = false;
-}
-function spawnBubble(){
-  const area = $("ccArea");
-  const b = document.createElement("button");
-  b.className = "chip";
-  b.textContent = "🫧";
-  b.style.position = "absolute";
-  b.style.borderRadius = "999px";
-  b.style.padding = "10px 12px";
-  b.style.fontSize = "1rem";
-  const w = area.clientWidth || 320;
-  const h = area.clientHeight || 160;
-  b.style.left = Math.max(0, Math.random()*(w-60)) + "px";
-  b.style.top = Math.max(0, Math.random()*(h-40)) + "px";
-  const born = Date.now();
-  b.onclick = ()=>{
-    const age = (Date.now()-born)/1000;
-    // reward calm clicks (0.8s to 2.5s) more than rapid spam
-    let pts = 0;
-    if(age < 0.25) pts = 0;
-    else if(age < 0.8) pts = 1;
-    else if(age < 2.5) pts = 2;
-    else pts = 1;
-    calmClicks.score += pts;
-    $("ccScore").textContent = calmClicks.score;
-    b.remove();
-    if(pts>=2) sparkAt(area, 0.4);
+  const NS = "mindurmind_v5_coach_emotionquest";
+  const K = {
+    SESSION: `${NS}:session`,
+    STUDENTS: `${NS}:students`,
+    CHECKINS: `${NS}:checkins`,
+    HABITS: `${NS}:habits`,
+    SETTINGS: `${NS}:settings`,
+    ECOACTIONS: `${NS}:ecoactions`,
+    COACHCHAT: `${NS}:coachchat`,         // map studentId -> array messages
+    QUEST: `${NS}:quest`                  // map studentId -> quest progress
   };
-  area.appendChild(b);
-  // float animation
-  b.animate([{ transform:"translateY(0)", opacity:0.9 }, { transform:"translateY(-18px)", opacity:0.0 }], { duration: 2200 + Math.random()*1100, easing:"ease-out" });
-  setTimeout(()=>{ if(b.isConnected) b.remove(); }, 2600);
-}
-function onCalmClicksDone(){
-  $("ccTime").textContent = "Done";
-  if(calmClicks.score > (state.game.calmClicksBest||0)){
-    state.game.calmClicksBest = calmClicks.score;
-    $("ccBest").textContent = calmClicks.score;
-    saveState();
-    toast("New best 🎉");
-  }else{
-    toast("Done");
-  }
-  // reward student a little
-  if(state.active.role==="student"){
-    const p = getProfile();
-    p.garden.pct = clamp((p.garden.pct||0) + 4, 0, 100);
-    saveState();
-    refreshStudentTop();
-  }
-}
 
-/* ---------- charts (simple canvas) ---------- */
-function drawAxes(ctx, w, h){
-  ctx.clearRect(0,0,w,h);
-  ctx.lineWidth = 1;
-  ctx.strokeStyle = "rgba(15,23,42,.12)";
-  ctx.beginPath();
-  ctx.moveTo(34, 12); ctx.lineTo(34, h-26);
-  ctx.lineTo(w-10, h-26);
-  ctx.stroke();
-}
-function plotLine(ctx, points, w, h, yMin, yMax){
-  const x0 = 34, y0 = h-26, x1 = w-10, y1 = 12;
-  const dx = (x1-x0) / Math.max(1, points.length-1);
-  ctx.lineWidth = 3;
-  ctx.strokeStyle = "rgba(96,165,250,.9)";
-  ctx.beginPath();
-  points.forEach((v,i)=>{
-    const x = x0 + dx*i;
-    const y = y0 - ( (v-yMin) / (yMax-yMin || 1) ) * (y0-y1);
-    if(i===0) ctx.moveTo(x,y); else ctx.lineTo(x,y);
+  function nowISO(){ return new Date().toISOString(); }
+  function todayKey(){
+    const d = new Date();
+    const y = d.getFullYear();
+    const m = String(d.getMonth()+1).padStart(2,"0");
+    const da = String(d.getDate()).padStart(2,"0");
+    return `${y}-${m}-${da}`;
+  }
+  function loadJSON(key, fallback){
+    try{ const raw = localStorage.getItem(key); return raw ? JSON.parse(raw) : fallback; }
+    catch(e){ console.warn("loadJSON failed", key, e); return fallback; }
+  }
+  function saveJSON(key, value){
+    try{ localStorage.setItem(key, JSON.stringify(value)); return true; }
+    catch(e){ console.error("saveJSON failed", key, e); return false; }
+  }
+  function escapeHTML(str){
+    return String(str).replace(/[&<>"']/g, (c)=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+  }
+  function clamp(n,a,b){ return Math.max(a, Math.min(b,n)); }
+  function uid(){ return "u_" + Math.random().toString(36).slice(2,9) + "_" + Date.now().toString(36); }
+  function fmtDateShort(iso){
+    try{ const d = new Date(iso); return d.toLocaleDateString(undefined, {weekday:"short", month:"short", day:"numeric"}); }
+    catch{ return "—"; }
+  }
+
+  const toastEl = document.getElementById("toast");
+  let toastTimer = null;
+  function toast(msg){
+    toastEl.textContent = msg;
+    toastEl.classList.add("show");
+    if(toastTimer) clearTimeout(toastTimer);
+    toastTimer = setTimeout(()=>toastEl.classList.remove("show"), 1400);
+  }
+
+  let session = loadJSON(K.SESSION, null);
+  const settings = loadJSON(K.SETTINGS, {
+    pilotName: "MindUrMind Pilot",
+    schoolName: "Your School",
+    schoolAggregationLocalOnly: true
   });
-  ctx.stroke();
-  // dots
-  ctx.fillStyle = "rgba(52,211,153,.9)";
-  points.forEach((v,i)=>{
-    const x = x0 + dx*i;
-    const y = y0 - ( (v-yMin) / (yMax-yMin || 1) ) * (y0-y1);
-    ctx.beginPath(); ctx.arc(x,y,4,0,Math.PI*2); ctx.fill();
-  });
-}
-function drawBars(ctx, labelsToCounts, w, h){
-  const x0=34, y0=h-26, x1=w-10, y1=12;
-  const keys = Object.keys(labelsToCounts);
-  const max = Math.max(1, ...Object.values(labelsToCounts));
-  const bw = (x1-x0) / Math.max(1, keys.length);
-  keys.forEach((k,i)=>{
-    const v = labelsToCounts[k];
-    const barH = (v/max) * (y0-y1);
-    const x = x0 + i*bw + 8;
-    const y = y0 - barH;
-    ctx.fillStyle = "rgba(167,139,250,.65)";
-    ctx.fillRect(x,y, bw-16, barH);
-    ctx.fillStyle = "rgba(15,23,42,.65)";
-    ctx.font = "12px system-ui";
-    ctx.fillText(String(v), x + (bw-16)/2 - 4, y - 6);
-  });
-}
 
-function drawStudentCharts(){
-  if(state.active.role!=="student") return;
-  const p = getProfile();
+  const mainBody = document.getElementById("mainBody");
+  const pageTitle = document.getElementById("pageTitle");
+  const pageSubtitle = document.getElementById("pageSubtitle");
+  const logoutBtn = document.getElementById("logoutBtn");
+  const roleBadgeWrap = document.getElementById("roleBadgeWrap");
+  const roleBadge = document.getElementById("roleBadge");
+  const brandHome = document.getElementById("brandHome");
+  const openFamily = document.getElementById("openFamily");
+  const openAbout = document.getElementById("openAbout");
 
-  // Mood chart: map moods to numeric val just for trend: Great 5, Okay 4, Tired 3, Stressed/Anxious 2, Sad/Lonely 1, Angry 2
-  const moodMap = {Great:5, Okay:4, Tired:3, Stressed:2, Anxious:2, Angry:2, Sad:1, Lonely:1};
-  const m = p.moodLogs.slice(-7).map(x=> moodMap[x.mood] || 3);
-  const c1 = $("moodChart");
-  if(c1){
-    const ctx = c1.getContext("2d");
-    drawAxes(ctx, c1.width, c1.height);
-    if(m.length>=2){
-      plotLine(ctx, m, c1.width, c1.height, 1, 5);
-      $("moodTrendNote").textContent = "Higher line = better mood (rough guide).";
-    }else{
-      $("moodTrendNote").textContent = "Log moods to see a trend.";
-    }
+  function setPage(title, subtitle){ pageTitle.textContent = title; pageSubtitle.textContent = subtitle; }
+  function mount(markup){ mainBody.innerHTML = markup; }
+  function on(id, evt, handler){ const el = document.getElementById(id); if(el) el.addEventListener(evt, handler); }
+
+  function setRoleBadge(role){
+    roleBadgeWrap.style.display = "block";
+    roleBadge.textContent = role === "student" ? "Student" : (role === "school" ? "School" : "Guest");
   }
+  function clearRoleBadge(){ roleBadgeWrap.style.display = "none"; }
 
-  const s = p.sleepLogs.slice(-7).map(x=> x.hours);
-  const c2 = $("sleepChart");
-  if(c2){
-    const ctx = c2.getContext("2d");
-    drawAxes(ctx, c2.width, c2.height);
-    if(s.length>=2){
-      plotLine(ctx, s, c2.width, c2.height, 0, 10);
-      $("sleepTrendNote").textContent = "Aim for your goal consistently.";
-    }else{
-      $("sleepTrendNote").textContent = "Log sleep to see a trend.";
-    }
+  function setSession(s){
+    session = s;
+    saveJSON(K.SESSION, session);
+    logoutBtn.style.display = session ? "inline-flex" : "none";
+    if(session) setRoleBadge(session.role); else clearRoleBadge();
   }
+  function logout(){ setSession(null); renderSignIn(); }
 
-  // update sleep goal UI
-  $("sleepGoal").textContent = state.ui.sleepGoal || 8;
-  // habits UI
-  refreshHabitsUI();
-  // eco
-  refreshEcoDashboard();
-  // timer UI
-  updateTimerUI();
-}
+  logoutBtn.addEventListener("click", logout);
+  brandHome.addEventListener("click", (e)=>{ e.preventDefault(); session ? renderAppHome() : renderSignIn(); });
+  openFamily.addEventListener("click", ()=>renderFamilyCorner());
+  openAbout.addEventListener("click", ()=>renderAboutPrivacy());
 
-function drawSchoolCharts(){
-  if(state.active.role!=="school") return;
-  const c = $("schMoodChart");
-  const ctx = c.getContext("2d");
-  drawAxes(ctx, c.width, c.height);
-  const agg = aggregateDevice();
-  if(agg.totalMoodLogs === 0){
-    $("schMoodNote").textContent = "No data yet.";
-    return;
-  }
-  $("schMoodNote").textContent = "Counts from this device only.";
-  const dist = agg.moodDist;
-  const labels = ["Great","Okay","Stressed","Sad","Angry","Anxious","Tired","Lonely"];
-  const counts = {};
-  labels.forEach(l=> counts[l] = dist[l]||0);
-  drawBars(ctx, counts, c.width, c.height);
-}
+  function getStudents(){ return loadJSON(K.STUDENTS, {}); }
+  function saveStudents(map){ return saveJSON(K.STUDENTS, map); }
 
-/* ---------- school view ---------- */
-function showSchoolView(view){
-  document.querySelectorAll("#schoolApp .tab").forEach(el=>{
-    el.classList.toggle("active", el.dataset.view === view);
-  });
-  $("sc-view-dash").classList.toggle("hide", view!=="dash");
-  $("sc-view-actions").classList.toggle("hide", view!=="actions");
-  if(view==="dash"){
-    const agg = aggregateDevice();
-    $("sKStudents").textContent = agg.students;
-    $("sKMoods").textContent = agg.totalMoodLogs;
-    $("sKSleep").textContent = agg.avgSleep === null ? "–" : agg.avgSleep.toFixed(1)+"h";
-    $("sKEco").textContent = agg.ecoDone;
-    $("sKFocus").textContent = agg.focusPoints;
-    $("sKHabits").textContent = agg.habitPoints;
-    drawSchoolCharts();
-    renderSchoolLists();
-  }
-}
-function renderSchoolLists(){
-  if(state.active.role!=="school") return;
-  const agg = aggregateDevice();
-  // top causes
-  const causeList = $("schCauseList");
-  causeList.innerHTML = "";
-  const topCauses = Object.entries(agg.causeCounts).sort((a,b)=>b[1]-a[1]).slice(0,6);
-  if(topCauses.length===0){
-    const li=document.createElement("li"); li.innerHTML = '<div class="fineprint">No data yet.</div>'; causeList.appendChild(li);
-  }else{
-    topCauses.forEach(([k,v])=>{
-      const li=document.createElement("li");
-      li.innerHTML = \`<div style="font-weight:900;">\${escapeHtml(k||"Unknown")}</div><span class="badge">\${v}</span>\`;
-      causeList.appendChild(li);
-    });
-  }
-  // eco list
-  const ecoList = $("schEcoList");
-  ecoList.innerHTML = "";
-  const topEco = Object.entries(agg.ecoCounts).sort((a,b)=>b[1]-a[1]).slice(0,6);
-  if(topEco.length===0){
-    const li=document.createElement("li"); li.innerHTML = '<div class="fineprint">No eco actions logged yet.</div>'; ecoList.appendChild(li);
-  }else{
-    topEco.forEach(([id,v])=>{
-      const txt = (ECO_ACTIONS.find(x=>x.id===id)||{}).text || id;
-      const li=document.createElement("li");
-      li.innerHTML = \`<div style="font-weight:900;">\${escapeHtml(txt)}</div><span class="badge">\${v}</span>\`;
-      ecoList.appendChild(li);
-    });
-  }
-}
+  function getCheckins(){ return loadJSON(K.CHECKINS, []); }
+  function saveCheckins(arr){ return saveJSON(K.CHECKINS, arr); }
 
-/* ---------- aggregation (device-level) ---------- */
-function aggregateDevice(){
-  const profiles = Object.values(state.profiles||{});
-  const students = profiles.length;
+  function getHabits(){ return loadJSON(K.HABITS, {}); }
+  function saveHabits(map){ return saveJSON(K.HABITS, map); }
 
-  const moodDist = {};
-  let totalMoodLogs = 0;
-  const causeCounts = {};
-  let sleepSum = 0, sleepN = 0;
-  let ecoDone = 0;
-  const ecoCounts = {};
-  let focusPoints = 0;
-  let habitPoints = 0;
+  function getEcoActions(){ return loadJSON(K.ECOACTIONS, {}); }
+  function saveEcoActions(map){ return saveJSON(K.ECOACTIONS, map); }
 
-  const w = currentWeekId();
+  function getCoachChat(){ return loadJSON(K.COACHCHAT, {}); }
+  function saveCoachChat(map){ return saveJSON(K.COACHCHAT, map); }
 
-  profiles.forEach(p=>{
-    (p.moodLogs||[]).forEach(m=>{
-      moodDist[m.mood] = (moodDist[m.mood]||0) + 1;
-      totalMoodLogs += 1;
-      if(m.cause){
-        causeCounts[m.cause] = (causeCounts[m.cause]||0) + 1;
-      }
-    });
-    // latest 7 sleep logs per student
-    (p.sleepLogs||[]).slice(-7).forEach(s=>{
-      sleepSum += Number(s.hours||0);
-      sleepN += 1;
-    });
-    // eco week only
-    if((p.eco||{}).weekId !== w){
-      // ignore old week
-    }else{
-      const acts = p.eco.actions || {};
-      const keys = Object.keys(acts);
-      ecoDone += keys.length;
-      keys.forEach(id=>{
-        ecoCounts[id] = (ecoCounts[id]||0) + 1;
+  function getQuest(){ return loadJSON(K.QUEST, {}); }
+  function saveQuest(map){ return saveJSON(K.QUEST, map); }
+
+  // Initialize structures if missing
+  if(!loadJSON(K.STUDENTS, null)) saveJSON(K.STUDENTS, {});
+  if(!loadJSON(K.CHECKINS, null)) saveJSON(K.CHECKINS, []);
+  if(!loadJSON(K.HABITS, null)) saveJSON(K.HABITS, {});
+  if(!loadJSON(K.ECOACTIONS, null)) saveJSON(K.ECOACTIONS, {});
+  if(!loadJSON(K.COACHCHAT, null)) saveJSON(K.COACHCHAT, {});
+  if(!loadJSON(K.QUEST, null)) saveJSON(K.QUEST, {});
+
+  function renderSignIn(){
+    clearRoleBadge();
+    logoutBtn.style.display = "none";
+    setPage("Sign in", "Choose your role. This pilot is non-clinical and designed for wellbeing awareness, positive habits, and self-learning.");
+    mount(`
+      <div class="stack">
+        <div class="note">
+          <strong>Privacy-first pilot</strong><br>
+          Student reflections stay on this device only. School insights are aggregated locally from participating students on this same device.
+        </div>
+
+        <div class="tabs" role="tablist" aria-label="Role selector">
+          <button class="tab active" id="tabStudent" role="tab" aria-selected="true">Student</button>
+          <button class="tab" id="tabSchool" role="tab" aria-selected="false">School</button>
+        </div>
+
+        <div id="rolePanel"></div>
+
+        <div class="divider"></div>
+        <div class="help">Tip: For demos, you can create a student profile in seconds. No email verification is required for this pilot prototype.</div>
+      </div>
+    `);
+
+    function renderStudentPanel(){
+      const students = getStudents();
+      const list = Object.values(students);
+      const options = list.map(s => `<option value="${escapeHTML(s.id)}">${escapeHTML(s.name)} (Grade ${escapeHTML(s.grade)})</option>`).join("");
+
+      document.getElementById("rolePanel").innerHTML = `
+        <div class="card" style="box-shadow:none; border-radius:18px; border:1px solid rgba(24,55,90,.10); background: rgba(255,255,255,.60)">
+          <div class="card-body">
+            <div class="stack">
+              <div class="row">
+                <div class="field">
+                  <label for="studentPick">Existing student (optional)</label>
+                  <select id="studentPick">
+                    <option value="">— Select —</option>
+                    ${options}
+                  </select>
+                  <div class="help">If you already created a student on this device, pick them here to sign in quickly.</div>
+                </div>
+              </div>
+
+              <div class="divider"></div>
+
+              <div class="row">
+                <div class="field">
+                  <label for="studentName">Student name</label>
+                  <input id="studentName" placeholder="e.g., Aisha" maxlength="32" />
+                </div>
+                <div class="field">
+                  <label for="studentGrade">Grade</label>
+                  <select id="studentGrade">
+                    ${Array.from({length:8}, (_,i)=> `<option>${i+5}</option>`).join("")}
+                  </select>
+                </div>
+              </div>
+
+              <div class="row">
+                <button class="btn primary" id="studentSignIn">Continue</button>
+                <button class="btn" id="studentDemo">Use demo student</button>
+              </div>
+
+              <div class="note warn">
+                <strong>Reminder</strong><br>
+                This is not a clinical tool. If you feel unsafe, talk to a trusted adult or seek professional support.
+              </div>
+            </div>
+          </div>
+        </div>
+      `;
+
+      on("studentSignIn","click", ()=>{
+        const pick = document.getElementById("studentPick").value.trim();
+        if(pick){
+          const s = getStudents()[pick];
+          if(!s){ alert("Student not found on this device."); return; }
+          setSession({role:"student", studentId:s.id, name:s.name});
+          renderAppHome();
+          return;
+        }
+        const name = document.getElementById("studentName").value.trim();
+        const grade = document.getElementById("studentGrade").value.trim();
+        if(name.length < 2){ alert("Please enter a student name (at least 2 characters)."); return; }
+        const map = getStudents();
+        const id = uid();
+        map[id] = {id, name, grade, createdAt: nowISO()};
+        saveStudents(map);
+        setSession({role:"student", studentId:id, name});
+        renderAppHome();
+      });
+
+      on("studentDemo","click", ()=>{
+        const map = getStudents();
+        const id = uid();
+        map[id] = {id, name:"Demo Student", grade:"8", createdAt: nowISO()};
+        saveStudents(map);
+        setSession({role:"student", studentId:id, name:"Demo Student"});
+        renderAppHome();
+      });
+
+      on("studentPick","change", (e)=>{
+        if(e.target.value){
+          const s = getStudents()[e.target.value];
+          if(s){
+            document.getElementById("studentName").value = s.name;
+            document.getElementById("studentGrade").value = s.grade;
+          }
+        }
       });
     }
-    focusPoints += (p.focus && p.focus.points) ? p.focus.points : 0;
-    habitPoints += (p.habits && p.habits.points) ? p.habits.points : 0;
-  });
 
-  return {
-    students,
-    moodDist,
-    totalMoodLogs,
-    causeCounts,
-    avgSleep: sleepN ? (sleepSum/sleepN) : null,
-    ecoDone,
-    ecoCounts,
-    focusPoints,
-    habitPoints
-  };
-}
+    function renderSchoolPanel(){
+      document.getElementById("rolePanel").innerHTML = `
+        <div class="card" style="box-shadow:none; border-radius:18px; border:1px solid rgba(24,55,90,.10); background: rgba(255,255,255,.60)">
+          <div class="card-body">
+            <div class="stack">
+              <div class="note ok">
+                <strong>School view is aggregated & local</strong><br>
+                Insights shown here are computed from students who used this same device. No individual entries are shown.
+              </div>
 
-/* ---------- reset ---------- */
-function resetAll(){
-  const ok = confirm("This will erase all saved data on this device. Continue?");
-  if(!ok) return;
-  localStorage.removeItem(KEY);
-  state = loadState();
-  stopTimer(false); stopBreath(); stopCalmClicks();
+              <div class="row">
+                <div class="field">
+                  <label for="schoolPin">School access PIN (demo)</label>
+                  <input id="schoolPin" placeholder="Enter PIN (default: 1234)" inputmode="numeric" maxlength="8"/>
+                  <div class="help">This prototype uses a simple PIN for demo. In a real pilot, this would be managed by the school.</div>
+                </div>
+              </div>
+
+              <div class="row">
+                <button class="btn primary" id="schoolSignIn">Continue</button>
+              </div>
+
+              <div class="note warn">
+                <strong>No AI in School view</strong><br>
+                School dashboard is passive (insights + suggested actions) to avoid any perception of monitoring or evaluation.
+              </div>
+            </div>
+          </div>
+        </div>
+      `;
+
+      on("schoolSignIn","click", ()=>{
+        const pin = document.getElementById("schoolPin").value.trim();
+        if(pin !== "1234"){ alert("Incorrect PIN for this demo. Try 1234."); return; }
+        setSession({role:"school", name: settings.schoolName});
+        renderAppHome();
+      });
+    }
+
+    const tabStudent = document.getElementById("tabStudent");
+    const tabSchool = document.getElementById("tabSchool");
+    function activate(which){
+      if(which==="student"){
+        tabStudent.classList.add("active"); tabStudent.setAttribute("aria-selected","true");
+        tabSchool.classList.remove("active"); tabSchool.setAttribute("aria-selected","false");
+        renderStudentPanel();
+      }else{
+        tabSchool.classList.add("active"); tabSchool.setAttribute("aria-selected","true");
+        tabStudent.classList.remove("active"); tabStudent.setAttribute("aria-selected","false");
+        renderSchoolPanel();
+      }
+    }
+    tabStudent.addEventListener("click", ()=>activate("student"));
+    tabSchool.addEventListener("click", ()=>activate("school"));
+    activate("student");
+  }
+
+  function renderAppHome(){
+    if(!session){ renderSignIn(); return; }
+    logoutBtn.style.display = "inline-flex";
+    setRoleBadge(session.role);
+    if(session.role === "student") renderStudentHome();
+    else if(session.role === "school") renderSchoolHome();
+    else renderSignIn();
+  }
+
+  // ---------------------------
+  // STUDENT HOME
+  // ---------------------------
+  function renderStudentHome(){
+    const name = session.name || "Student";
+    setPage("Student dashboard", `Welcome, ${name}. Your reflections stay on this device. This pilot shares nothing individually.`);
+
+    mount(`
+      <div class="stack">
+        <div class="pillrow">
+          <span class="pill">👤 <b>${escapeHTML(name)}</b></span>
+          <span class="pill">🔒 Device-only reflections</span>
+          <span class="pill">🧭 Non-clinical wellbeing awareness</span>
+        </div>
+
+        <div class="quickgrid" aria-label="Quick actions">
+          <button class="tile" id="tileCheckin"><div class="t">✅ Check-in</div><p class="s">Quick mood + optional note (private, on-device).</p></button>
+          <button class="tile" id="tileHabits"><div class="t">🏁 Habits</div><p class="s">Small daily habits that support wellbeing.</p></button>
+          <button class="tile" id="tileClimate"><div class="t">🌍 Climate Feelings (Eco-Anxiety)</div><p class="s">A 2-minute guide: calm your mind + one small action.</p></button>
+          <button class="tile" id="tileGame"><div class="t">🎮 Calm Garden (mini-game)</div><p class="s">A gentle focus game paired with slow breathing.</p></button>
+        </div>
+
+        <div class="tabs" role="tablist" aria-label="Student tabs">
+          <button class="tab active" id="sTabCheckin" role="tab" aria-selected="true">Check-in</button>
+          <button class="tab" id="sTabHabits" role="tab" aria-selected="false">Habits</button>
+          <button class="tab" id="sTabClimate" role="tab" aria-selected="false">Climate Feelings</button>
+          <button class="tab" id="sTabGame" role="tab" aria-selected="false">Mini-game</button>
+          <button class="tab" id="sTabLearn" role="tab" aria-selected="false">Learn</button>
+          <button class="tab" id="sTabCoach" role="tab" aria-selected="false">AI wellbeing coach</button>
+          <button class="tab" id="sTabQuest" role="tab" aria-selected="false">Emotion Quest</button>
+          <button class="tab" id="sTabHistory" role="tab" aria-selected="false">My history</button>
+        </div>
+
+        <div id="studentPanel"></div>
+      </div>
+    `);
+
+    function activate(tab){
+      const map = {
+        checkin: ["sTabCheckin", renderStudentCheckin],
+        habits: ["sTabHabits", renderStudentHabits],
+        climate: ["sTabClimate", renderStudentClimate],
+        game: ["sTabGame", renderStudentGame],
+        learn: ["sTabLearn", renderStudentLearn],
+        coach: ["sTabCoach", renderStudentCoach],
+        quest: ["sTabQuest", renderEmotionQuest],
+        history: ["sTabHistory", renderStudentHistory]
+      };
+      Object.keys(map).forEach(k=>{
+        const [id] = map[k];
+        const el = document.getElementById(id);
+        if(!el) return;
+        const isActive = (k===tab);
+        el.classList.toggle("active", isActive);
+        el.setAttribute("aria-selected", isActive ? "true" : "false");
+      });
+      map[tab][1]();
+    }
+
+    on("sTabCheckin","click", ()=>activate("checkin"));
+    on("sTabHabits","click", ()=>activate("habits"));
+    on("sTabClimate","click", ()=>activate("climate"));
+    on("sTabGame","click", ()=>activate("game"));
+    on("sTabLearn","click", ()=>activate("learn"));
+    on("sTabCoach","click", ()=>activate("coach"));
+    on("sTabQuest","click", ()=>activate("quest"));
+    on("sTabHistory","click", ()=>activate("history"));
+
+    on("tileCheckin","click", ()=>activate("checkin"));
+    on("tileHabits","click", ()=>activate("habits"));
+    on("tileClimate","click", ()=>activate("climate"));
+    on("tileGame","click", ()=>activate("game"));
+
+    activate("checkin");
+  }
+
+  // ---------------------------
+  // CHECK-IN
+  // ---------------------------
+  function renderStudentCheckin(){
+    const panel = document.getElementById("studentPanel");
+    const sid = session.studentId;
+    const checkins = loadJSON(K.CHECKINS, []).filter(c => c.studentId === sid);
+    const today = todayKey();
+    const alreadyToday = checkins.some(c => c.day === today);
+
+    panel.innerHTML = `
+      <div class="card" style="box-shadow:none; border-radius:18px; background: rgba(255,255,255,.60); border:1px solid rgba(24,55,90,.10)">
+        <div class="card-body">
+          <div class="stack">
+            <div class="note ${alreadyToday ? "ok" : ""}">
+              <strong>Today’s check-in</strong><br>
+              ${alreadyToday ? "You already checked in today. You can still add another note if you want." : "A quick check-in helps you notice patterns and build healthy habits."}
+              <div class="help" style="margin-top:8px">Reminder: your note stays on your device. No one else sees it.</div>
+            </div>
+
+            <div class="row">
+              <div class="field">
+                <label for="mood">How do you feel right now?</label>
+                <select id="mood">
+                  <option value="calm">🙂 Calm</option>
+                  <option value="okay">😌 Okay</option>
+                  <option value="stressed">😟 Stressed</option>
+                  <option value="sad">😞 Sad</option>
+                  <option value="angry">😠 Angry</option>
+                  <option value="tired">🥱 Tired</option>
+                  <option value="excited">🤩 Excited</option>
+                </select>
+              </div>
+
+              <div class="field">
+                <label for="sleep">Sleep last night (hours)</label>
+                <input id="sleep" type="number" min="0" max="16" step="0.5" inputmode="decimal" placeholder="e.g., 7.5" />
+                <div class="help">Used for your own habits + local aggregation (no identity).</div>
+              </div>
+
+              <div class="field">
+                <label for="study">Focused study today (minutes)</label>
+                <input id="study" type="number" min="0" max="600" step="5" inputmode="numeric" placeholder="e.g., 60" />
+              </div>
+            </div>
+
+            <div class="row">
+              <div class="field" style="min-width:280px; flex:2">
+                <label for="note">Optional private note (on-device only)</label>
+                <textarea id="note" placeholder="Anything you want to remember — feelings, triggers, wins, gratitude..."></textarea>
+                <div class="help">Tip: keep it simple. Even 1 line is enough.</div>
+              </div>
+            </div>
+
+            <div class="row">
+              <button class="btn primary" id="saveCheckin">Save check-in</button>
+              <button class="btn" id="quickReset">Clear fields</button>
+            </div>
+
+            <div class="divider"></div>
+            <div class="help">If you feel overwhelmed right now: breathe in 4, hold 2, out 6. Repeat twice.</div>
+          </div>
+        </div>
+      </div>
+    `;
+
+    on("quickReset","click", ()=>{
+      document.getElementById("sleep").value = "";
+      document.getElementById("study").value = "";
+      document.getElementById("note").value = "";
+      document.getElementById("mood").value = "calm";
+      toast("Cleared");
+    });
+
+    on("saveCheckin","click", ()=>{
+      const mood = document.getElementById("mood").value;
+      const sleepRaw = document.getElementById("sleep").value;
+      const studyRaw = document.getElementById("study").value;
+      const note = document.getElementById("note").value.trim();
+
+      const sleep = sleepRaw === "" ? null : clamp(parseFloat(sleepRaw), 0, 16);
+      const study = studyRaw === "" ? null : clamp(parseInt(studyRaw, 10), 0, 600);
+
+      const rec = { id: uid(), studentId: sid, day: todayKey(), mood, sleep, study, note, createdAt: nowISO() };
+      const all = getCheckins();
+      all.push(rec);
+      if(!saveCheckins(all)){ alert("Could not save (storage full or blocked)."); return; }
+      toast("Saved ✓");
+      renderStudentCheckin();
+    });
+  }
+
+  // ---------------------------
+  // HABITS
+  // ---------------------------
+  function renderStudentHabits(){
+    const panel = document.getElementById("studentPanel");
+    const sid = session.studentId;
+    const habitsMap = getHabits();
+    const my = habitsMap[sid] || { water: [], move: [], screenBreak: [], gratitude: [], bedtime: [] };
+    ["water","move","screenBreak","gratitude","bedtime"].forEach(k=>{ if(!Array.isArray(my[k])) my[k]=[]; });
+
+    function isDoneToday(arr){ return arr.includes(todayKey()); }
+    function toggle(arr){
+      const t = todayKey();
+      const idx = arr.indexOf(t);
+      if(idx >= 0) arr.splice(idx,1); else arr.push(t);
+    }
+
+    panel.innerHTML = `
+      <div class="stack">
+        <div class="note">
+          <strong>Small habits. Big impact.</strong><br>
+          Choose just 1–2 habits to focus on this week. Consistency matters more than perfection.
+        </div>
+
+        <div class="kpi">
+          <div class="box"><div class="t">Check-ins saved</div><div class="v">${getCheckins().filter(c=>c.studentId===sid).length}</div></div>
+          <div class="box"><div class="t">Habits done today</div><div class="v" id="habitsDoneKpi">—</div></div>
+          <div class="box"><div class="t">Focus window</div><div class="v">1 week</div></div>
+        </div>
+
+        <div class="card" style="box-shadow:none; border-radius:18px; background: rgba(255,255,255,.60); border:1px solid rgba(24,55,90,.10)">
+          <div class="card-body">
+            <div class="stack">
+              ${habitRow("💧 Drink water", "water", "Even 1 extra glass helps your energy.")}
+              ${habitRow("🚶 Move your body", "move", "A short walk counts.")}
+              ${habitRow("📵 Take a screen break", "screenBreak", "2 minutes away from the screen resets your brain.")}
+              ${habitRow("🙏 Gratitude (1 line)", "gratitude", "Write one good thing from today.")}
+              ${habitRow("🌙 Bedtime routine", "bedtime", "Small steps: dim lights, no phone 15 min.")}
+              <div class="row">
+                <button class="btn primary" id="saveHabits">Save habits</button>
+                <button class="btn" id="resetHabits">Clear today</button>
+              </div>
+              <div class="help">Habits are stored on this device only.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    `;
+
+    function habitRow(title, key, desc){
+      const done = isDoneToday(my[key]);
+      const status = done ? `<span class="oktext">Done today</span>` : `<span class="muted">Not done yet</span>`;
+      return `
+        <div class="item">
+          <div class="row" style="align-items:center; justify-content:space-between">
+            <div>
+              <h3 style="margin:0">${title}</h3>
+              <p>${escapeHTML(desc)}</p>
+              <div class="help" style="margin-top:6px">${status}</div>
+            </div>
+            <div><button class="btn smallbtn" id="toggle_${key}">${done ? "Undo" : "Mark done"}</button></div>
+          </div>
+        </div>
+      `;
+    }
+
+    ["water","move","screenBreak","gratitude","bedtime"].forEach(key=>{
+      on(`toggle_${key}`,"click", ()=>{
+        toggle(my[key]);
+        renderStudentHabits();
+      });
+    });
+
+    function updateKpi(){
+      const doneCount = ["water","move","screenBreak","gratitude","bedtime"].reduce((acc,k)=>acc + (isDoneToday(my[k])?1:0), 0);
+      const el = document.getElementById("habitsDoneKpi");
+      if(el) el.textContent = String(doneCount);
+    }
+    updateKpi();
+
+    on("saveHabits","click", ()=>{
+      habitsMap[sid] = my;
+      if(!saveHabits(habitsMap)){ alert("Could not save (storage full or blocked)."); return; }
+      toast("Saved ✓");
+      renderStudentHabits();
+    });
+
+    on("resetHabits","click", ()=>{
+      const t = todayKey();
+      ["water","move","screenBreak","gratitude","bedtime"].forEach(k=>{
+        my[k] = (my[k]||[]).filter(d=>d!==t);
+      });
+      habitsMap[sid] = my;
+      saveHabits(habitsMap);
+      toast("Cleared today");
+      renderStudentHabits();
+    });
+  }
+
+  // ---------------------------
+  // CLIMATE FEELINGS (Eco-Anxiety) — auto-save toggles
+  // ---------------------------
+  function renderStudentClimate(){
+    const panel = document.getElementById("studentPanel");
+    const sid = session.studentId;
+    const ecoMap = getEcoActions();
+    const my = Array.isArray(ecoMap[sid]) ? ecoMap[sid] : [];
+    const today = todayKey();
+
+    const ACTIONS = [
+      {key:"refill",   label:"Refill bottle today",        desc:"One small routine reduces waste."},
+      {key:"lights",   label:"Switch off lights",          desc:"A simple habit that saves energy."},
+      {key:"plastic1", label:"One plastic-free item",      desc:"Just one item is enough."},
+      {key:"plant",    label:"Care for a plant/seed",      desc:"Even a small plant matters."},
+      {key:"share",    label:"Share one solution story",   desc:"Balance worry with hope."}
+    ];
+
+    function isDone(key){ return my.some(x => x.day === today && x.key === key); }
+    function toggle(key){
+      const idx = my.findIndex(x => x.day === today && x.key === key);
+      if(idx >= 0) my.splice(idx,1);
+      else my.push({day: today, key, at: nowISO()});
+      ecoMap[sid] = my;
+      saveEcoActions(ecoMap);
+    }
+    function doneCountToday(){ return ACTIONS.reduce((acc,a)=>acc + (isDone(a.key)?1:0), 0); }
+
+    panel.innerHTML = `
+      <div class="stack">
+        <div class="note ok">
+          <strong>🌍 Climate Feelings (Eco-Anxiety)</strong><br>
+          Feeling worried, sad, or angry about the environment is common. It means you care — and caring is a strength.
+          <div class="help" style="margin-top:8px">This is not a diagnosis. It’s a short guide to calm your mind and take one small action.</div>
+        </div>
+
+        <div class="card" style="box-shadow:none; border-radius:18px; background: rgba(255,255,255,.60); border:1px solid rgba(24,55,90,.10)">
+          <div class="card-body">
+            <div class="stack">
+              <div class="row">
+                <button class="btn primary" id="climateReset">1-minute reset</button>
+                <button class="btn" id="climateControl">Circle of control</button>
+                <button class="btn" id="climateMedia">Healthy media tip</button>
+                <button class="btn" id="climateCoachJump">Ask the AI coach</button>
+              </div>
+
+              <div id="climateOut" class="note" style="display:none"></div>
+
+              <div class="divider"></div>
+
+              <div class="note">
+                <strong>Pick ONE small action (auto-saved)</strong><br>
+                Choose one action for today. Small is powerful. No guilt. No perfection.
+                <div class="help" style="margin-top:6px">Saved on this device only. Not shared individually.</div>
+              </div>
+
+              <div class="kpi">
+                <div class="box"><div class="t">Actions done today</div><div class="v" id="ecoDoneKpi">${doneCountToday()}</div></div>
+                <div class="box"><div class="t">Suggestion</div><div class="v">Pick 1</div></div>
+                <div class="box"><div class="t">Time</div><div class="v">≤ 10 min</div></div>
+              </div>
+
+              <div class="list">
+                ${ACTIONS.map(a => `
+                  <div class="item">
+                    <div class="row" style="align-items:center; justify-content:space-between">
+                      <div>
+                        <h3>${escapeHTML(a.label)}</h3>
+                        <p>${escapeHTML(a.desc)}</p>
+                        <div class="help" style="margin-top:6px">${isDone(a.key) ? `<span class="oktext">Done today</span>` : `<span class="muted">Not done yet</span>`}</div>
+                      </div>
+                      <div><button class="btn smallbtn" id="eco_${a.key}">${isDone(a.key) ? "Undo" : "Mark done"}</button></div>
+                    </div>
+                  </div>
+                `).join("")}
+              </div>
+
+              <div class="row"><button class="btn" id="clearEcoToday">Clear today</button></div>
+
+              <div class="note warn">
+                <strong>When to talk to someone</strong><br>
+                If climate worries affect your sleep, mood, or focus for weeks, talk to a trusted adult or school counselor.
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    `;
+
+    function showOut(htmlContent){
+      const out = document.getElementById("climateOut");
+      out.style.display = "block";
+      out.innerHTML = htmlContent;
+    }
+
+    on("climateReset","click", ()=>{
+      showOut(`
+        <strong>1-minute reset</strong><br>
+        Try this twice:<br><br>
+        <ol style="margin:8px 0 0; padding-left:18px; color: rgba(16,33,58,.88); line-height:1.55">
+          <li>Breathe in for 4</li>
+          <li>Hold for 2</li>
+          <li>Breathe out slowly for 6</li>
+        </ol>
+        <div class="help" style="margin-top:10px">Notice: shoulders down, jaw relaxed, slow exhale.</div>
+      `);
+    });
+
+    on("climateControl","click", ()=>{
+      showOut(`
+        <strong>Circle of control</strong><br>
+        When the problem feels huge, shrink it to what you can control today:
+        <div class="divider"></div>
+        <div class="row" style="margin:0">
+          <div class="item" style="flex:1; margin:0">
+            <h3>✅ I can control</h3>
+            <p>My actions, my choices, my routines, what I share, how I speak about it.</p>
+          </div>
+          <div class="item" style="flex:1; margin:0">
+            <h3>❌ I can’t control</h3>
+            <p>Everything happening globally, other people’s choices, all outcomes.</p>
+          </div>
+        </div>
+        <div class="help" style="margin-top:10px">Choose one small action below — that’s enough.</div>
+      `);
+    });
+
+    on("climateMedia","click", ()=>{
+      showOut(`
+        <strong>Healthy media tip</strong><br>
+        Balance awareness with calm:
+        <ul style="margin:10px 0 0; padding-left:18px; color: rgba(16,33,58,.88); line-height:1.55">
+          <li>Limit heavy climate news to <b>10 minutes</b> per day.</li>
+          <li>Avoid doom content before sleep.</li>
+          <li>Add one “solution story” for every “problem story”.</li>
+        </ul>
+      `);
+    });
+
+    on("climateCoachJump","click", ()=>{
+      const tab = document.getElementById("sTabCoach");
+      if(tab) tab.click();
+    });
+
+    ACTIONS.forEach(a=>{
+      on(`eco_${a.key}`,"click", ()=>{
+        toggle(a.key);
+        toast("Saved ✓");
+        renderStudentClimate();
+      });
+    });
+
+    on("clearEcoToday","click", ()=>{
+      const filtered = my.filter(x => x.day !== today);
+      ecoMap[sid] = filtered;
+      saveEcoActions(ecoMap);
+      toast("Cleared today");
+      renderStudentClimate();
+    });
+  }
+
+  // ---------------------------
+  // CALM GARDEN mini-game
+  // ---------------------------
+  function renderStudentGame(){
+    const panel = document.getElementById("studentPanel");
+    panel.innerHTML = `
+      <div class="stack">
+        <div class="note ok">
+          <strong>🎮 Calm Garden (mini-game)</strong><br>
+          Tap the floating leaves gently while you breathe slowly. This trains calm attention — no scores are shared.
+          <div class="help" style="margin-top:8px">Try: inhale 4 • hold 2 • exhale 6 (repeat).</div>
+        </div>
+
+        <div class="gameWrap">
+          <div class="gameHUD">
+            <span class="hudPill" id="hudBreath">🌬️ Breathe: 4 • 2 • 6</span>
+            <span class="hudPill" id="hudScore">🍃 Leaves: 0</span>
+            <span class="hudPill" id="hudTime">⏱️ 60s</span>
+          </div>
+          <canvas id="gameCanvas" width="1000" height="500" aria-label="Calm Garden game canvas"></canvas>
+        </div>
+
+        <div class="row" style="justify-content:space-between; align-items:center">
+          <div class="help">Tip: Focus on slow exhale. If you feel tense, relax your shoulders and soften your gaze.</div>
+          <div class="row">
+            <button class="btn primary" id="gameStart">Start 60s</button>
+            <button class="btn" id="gameReset">Reset</button>
+          </div>
+        </div>
+
+        <div class="note warn">
+          <strong>Boundary</strong><br>
+          If you notice you’re using games to avoid life tasks, pause and try a 1-minute breathing reset instead.
+        </div>
+      </div>
+    `;
+
+    const canvas = document.getElementById("gameCanvas");
+    const ctx = canvas.getContext("2d");
+    const hudScore = document.getElementById("hudScore");
+    const hudTime = document.getElementById("hudTime");
+    const prefersReduced = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+    let running=false, score=0, timeLeft=60, lastT=0, timerAcc=0;
+    const leaves = [];
+    const LEAF_COUNT = 10;
+
+    function rand(a,b){ return a + Math.random()*(b-a); }
+    function spawnLeaf(){
+      return { x: rand(60, canvas.width-60), y: rand(80, canvas.height-80),
+        r: rand(18, 28),
+        vx: rand(-18, 18) * (prefersReduced ? 0.6 : 1),
+        vy: rand(-12, 12) * (prefersReduced ? 0.6 : 1),
+        wob: rand(0, Math.PI*2)
+      };
+    }
+    function resetLeaves(){ leaves.length=0; for(let i=0;i<LEAF_COUNT;i++) leaves.push(spawnLeaf()); }
+    resetLeaves();
+
+    function drawBackground(){
+      const g = ctx.createLinearGradient(0,0,0,canvas.height);
+      g.addColorStop(0,"rgba(59,185,255,.18)");
+      g.addColorStop(1,"rgba(65,215,160,.14)");
+      ctx.fillStyle=g; ctx.fillRect(0,0,canvas.width,canvas.height);
+
+      for(let i=0;i<10;i++){
+        const x = (i*110 + (prefersReduced?0:(performance.now()/30)%110)) % (canvas.width+120) - 60;
+        const y = 70 + i*35;
+        ctx.beginPath();
+        ctx.fillStyle="rgba(255,255,255,.35)";
+        ctx.arc(x,y,22,0,Math.PI*2);
+        ctx.fill();
+      }
+
+      ctx.fillStyle="rgba(255,255,255,.45)";
+      ctx.fillRect(0, canvas.height-70, canvas.width, 70);
+      ctx.fillStyle="rgba(65,215,160,.20)";
+      ctx.fillRect(0, canvas.height-70, canvas.width, 12);
+    }
+
+    function drawLeaf(l){
+      ctx.save();
+      ctx.translate(l.x, l.y);
+      const wob = Math.sin(l.wob) * (prefersReduced ? 0.25 : 0.45);
+      ctx.rotate(wob);
+
+      ctx.beginPath();
+      ctx.moveTo(0, -l.r);
+      ctx.quadraticCurveTo(l.r, -l.r*0.2, 0, l.r);
+      ctx.quadraticCurveTo(-l.r, -l.r*0.2, 0, -l.r);
+      ctx.closePath();
+
+      const lg = ctx.createLinearGradient(-l.r, -l.r, l.r, l.r);
+      lg.addColorStop(0, "rgba(65,215,160,.72)");
+      lg.addColorStop(1, "rgba(59,185,255,.55)");
+      ctx.fillStyle = lg;
+      ctx.fill();
+
+      ctx.strokeStyle="rgba(255,255,255,.55)";
+      ctx.lineWidth=2;
+      ctx.beginPath();
+      ctx.moveTo(0,-l.r*0.8);
+      ctx.lineTo(0,l.r*0.85);
+      ctx.stroke();
+
+      ctx.restore();
+    }
+
+    function tick(t){
+      if(!lastT) lastT = t;
+      const dt = Math.min(0.04, (t-lastT)/1000);
+      lastT = t;
+
+      drawBackground();
+
+      for(const l of leaves){
+        l.wob += dt * (prefersReduced ? 0.9 : 1.6);
+        if(running){
+          l.x += l.vx * dt;
+          l.y += l.vy * dt;
+          if(l.x < 50 || l.x > canvas.width-50) l.vx *= -1;
+          if(l.y < 60 || l.y > canvas.height-90) l.vy *= -1;
+        }
+        drawLeaf(l);
+      }
+
+      if(running){
+        timerAcc += dt;
+        if(timerAcc >= 1){
+          timerAcc = 0;
+          timeLeft = Math.max(0, timeLeft-1);
+          hudTime.textContent = "⏱️ " + timeLeft + "s";
+          if(timeLeft === 0){
+            running = false;
+            toast("Nice work ✨");
+          }
+        }
+      }
+
+      requestAnimationFrame(tick);
+    }
+
+    function startGame(){
+      score = 0; timeLeft = 60; timerAcc=0;
+      hudScore.textContent = "🍃 Leaves: 0";
+      hudTime.textContent = "⏱️ 60s";
+      running = true;
+      toast("Start ✓");
+    }
+    function resetGame(){
+      running=false; score=0; timeLeft=60; timerAcc=0;
+      resetLeaves();
+      hudScore.textContent = "🍃 Leaves: 0";
+      hudTime.textContent = "⏱️ 60s";
+      toast("Reset ✓");
+    }
+    function handleTap(px, py){
+      if(!running) return;
+      for(const l of leaves){
+        const dx = px - l.x, dy = py - l.y;
+        const dist = Math.sqrt(dx*dx + dy*dy);
+        if(dist <= l.r*1.05){
+          score += 1;
+          hudScore.textContent = "🍃 Leaves: " + score;
+          l.x = Math.max(60, Math.min(canvas.width-60, l.x + rand(-240,240)));
+          l.y = Math.max(80, Math.min(canvas.height-90, l.y + rand(-160,160)));
+          toast("Good ✓");
+          break;
+        }
+      }
+    }
+
+    canvas.addEventListener("click", (e)=>{
+      const rect = canvas.getBoundingClientRect();
+      const x = (e.clientX - rect.left) * (canvas.width / rect.width);
+      const y = (e.clientY - rect.top) * (canvas.height / rect.height);
+      handleTap(x,y);
+    }, {passive:true});
+
+    canvas.addEventListener("touchstart", (e)=>{
+      if(!e.touches || !e.touches.length) return;
+      const touch = e.touches[0];
+      const rect = canvas.getBoundingClientRect();
+      const x = (touch.clientX - rect.left) * (canvas.width / rect.width);
+      const y = (touch.clientY - rect.top) * (canvas.height / rect.height);
+      handleTap(x,y);
+    }, {passive:true});
+
+    on("gameStart","click", startGame);
+    on("gameReset","click", resetGame);
+    requestAnimationFrame(tick);
+  }
+
+  // ---------------------------
+  // LEARN
+  // ---------------------------
+  function renderStudentLearn(){
+    const panel = document.getElementById("studentPanel");
+    panel.innerHTML = `
+      <div class="stack">
+        <div class="note ok">
+          <strong>Learn (self-learning)</strong><br>
+          Short, student-friendly resources you can use anytime. No quizzes, no “scores”.
+        </div>
+
+        <div class="list">
+          ${learnCard("🧠 Understanding emotions", "Emotions are signals — not commands. Learn how to name them and respond wisely.",
+            ["Name it (30 seconds)", "Body scan: where do you feel it?", "One helpful next step"])}
+          ${learnCard("🌬️ Quick calm tools", "Simple techniques that reduce stress in under 2 minutes.",
+            ["4–2–6 breathing", "5-4-3-2-1 grounding", "Shoulder drop + slow exhale"])}
+          ${learnCard("🎮 Calm Garden", "A gentle mini-game for calm attention (no sharing).",
+            ["Tap floating leaves", "Breathe slowly as you play", "Stop at 60 seconds"])}
+          ${learnCard("📚 Study focus", "Build focus with tiny steps and protect your energy.",
+            ["Pomodoro (25/5)", "Remove 1 distraction", "Start with 2 minutes"])}
+          ${learnCard("🛌 Sleep basics", "Sleep supports mood, memory, and learning — even small improvements matter.",
+            ["Same wake time", "Screen down 30 min", "Wind-down routine"])}
+          ${learnCard("🌍 Climate feelings", "If climate news feels heavy, use a calm reset + one small action.",
+            ["Open: Climate Feelings", "Circle of control", "Pick 1 micro-action"])}
+          ${learnCard("🤝 Asking for help", "Strong people ask for help early, not late.",
+            ["Talk to a trusted adult", "School counselor / teacher", "If unsafe: emergency services"])}
+        </div>
+
+        <div class="row">
+          <button class="btn" id="goCoachFromLearn">Open AI wellbeing coach</button>
+          <button class="btn" id="goQuestFromLearn">Play Emotion Quest</button>
+        </div>
+      </div>
+    `;
+
+    function learnCard(title, desc, bullets){
+      return `
+        <div class="item">
+          <h3>${escapeHTML(title)}</h3>
+          <p>${escapeHTML(desc)}</p>
+          <div class="divider"></div>
+          <div class="help">
+            <ul style="margin:0; padding-left:18px; color: rgba(16,33,58,.72); line-height:1.55">
+              ${bullets.map(b=>`<li>${escapeHTML(b)}</li>`).join("")}
+            </ul>
+          </div>
+        </div>
+      `;
+    }
+
+    on("goCoachFromLearn","click", ()=>{ const tab=document.getElementById("sTabCoach"); if(tab) tab.click(); });
+    on("goQuestFromLearn","click", ()=>{ const tab=document.getElementById("sTabQuest"); if(tab) tab.click(); });
+  }
+
+  // ============================================================
+  // FEATURE 1: AI WELLBEING COACH (old style)
+  // - exact wording + quick tips + safety text
+  // - offline, rule-based suggestions (no external API)
+  // - messages stored on device only (studentId-scoped)
+  // ============================================================
+  function renderStudentCoach(){
+    const panel = document.getElementById("studentPanel");
+    const sid = session.studentId;
+
+    const chatMap = getCoachChat();
+    const thread = Array.isArray(chatMap[sid]) ? chatMap[sid] : [];
+    if(thread.length === 0){
+      // Seed with your exact intro lines
+      thread.push(
+        {who:"coach", text:"Tools, tips, and an AI coach for general guidance.", at: nowISO()},
+        {who:"coach", text:"AI wellbeing coach", at: nowISO()},
+        {who:"coach", text:"Ask about stress, sleep, confidence, focus, friendships, or anger.", at: nowISO()},
+        {who:"coach", text:"Hi! Tell me what’s going on, and I’ll suggest a few steps.", at: nowISO()},
+        {who:"coach", text:"You can say: “I’m stressed about exams”, “I can’t sleep”, “I feel sad”, “I can’t focus”, “friend issues”, “anger”..........", at: nowISO()}
+      );
+      chatMap[sid] = thread;
+      saveCoachChat(chatMap);
+    }
+
+    panel.innerHTML = `
+      <div class="stack">
+        <div class="note ok">
+          <strong>AI wellbeing coach</strong><br>
+          Tools, tips, and an AI coach for general guidance.
+          <div class="help" style="margin-top:8px">This is for learning coping skills. It doesn’t diagnose.</div>
+        </div>
+
+        <div class="chatWrap">
+          <div class="chatLog" id="chatLog" aria-label="AI wellbeing coach chat log"></div>
+
+          <div class="divider"></div>
+
+          <div class="row" style="align-items:flex-end">
+            <div class="field" style="min-width:260px; flex:2">
+              <label for="coachInput">Type a message…</label>
+              <textarea id="coachInput" placeholder="Type a message…"></textarea>
+              <div class="help">Notes and journal entries are private ,,,,,...</div>
+            </div>
+            <div class="row" style="align-items:flex-end">
+              <button class="btn primary" id="coachSend">Send</button>
+              <button class="btn" id="coachExamples">Examples</button>
+              <button class="btn danger" id="coachClear">Clear chat</button>
+            </div>
+          </div>
+
+          <div class="note warn">
+            <strong>Safety & support</strong><br>
+            Talk to a trusted adult (parent/guardian/teacher).<br>
+            Use Calm Toolkit for 60 seconds and re-check how you feel.<br>
+            If you feel unsafe: tell an adult immediately and call local emergency/helpline numbers.
+          </div>
+        </div>
+
+        <div class="item">
+          <h3>Self-help quick tips</h3>
+          <p class="muted">
+            Stress: 60 seconds breathing + one tiny task.<br>
+            Anger: pause, 3 breaths, step away for 2 minutes.<br>
+            Sad: talk to someone safe; do one gentle activity.<br>
+            Overthinking: write worry → write a fair response.<br>
+            Peer pressure: practise “No, I’m not comfortable.”
+          </p>
+        </div>
+
+        <div class="help dangertext">
+          If you feel unsafe or think you might harm yourself, stop and tell a trusted adult immediately.
+        </div>
+      </div>
+    `;
+
+    function renderChat(){
+      const log = document.getElementById("chatLog");
+      if(!log) return;
+      log.innerHTML = thread.map(m=>{
+        const who = m.who === "user" ? "You" : "Coach";
+        const cls = m.who === "user" ? "bubble user" : "bubble";
+        return `
+          <div class="msg">
+            <div class="who">${escapeHTML(who)}</div>
+            <div class="${cls}">${escapeHTML(m.text)}</div>
+          </div>
+        `;
+      }).join("");
+      // scroll to bottom
+      log.scrollTop = log.scrollHeight;
+    }
+
+    function persist(){
+      const cm = getCoachChat();
+      cm[sid] = thread;
+      saveCoachChat(cm);
+    }
+
+    function coachReply(userText){
+      // Crisis keywords → safety prompt (non-negotiable)
+      const t = userText.toLowerCase();
+      const dangerWords = ["suicide","kill myself","self harm","hurt myself","end my life","die","i want to die"];
+      if(dangerWords.some(w=>t.includes(w))){
+        return "If you feel unsafe or think you might harm yourself, stop and tell a trusted adult immediately. If you are in immediate danger, call local emergency/helpline numbers right now.";
+      }
+
+      // Topic detection
+      const topics = [];
+      if(t.includes("exam") || t.includes("test") || t.includes("grades") || t.includes("school")) topics.push("exams");
+      if(t.includes("stress") || t.includes("stressed") || t.includes("anx") || t.includes("worry")) topics.push("stress");
+      if(t.includes("sleep") || t.includes("can't sleep") || t.includes("insomnia") || t.includes("tired")) topics.push("sleep");
+      if(t.includes("sad") || t.includes("low") || t.includes("down") || t.includes("cry")) topics.push("sad");
+      if(t.includes("focus") || t.includes("concentr") || t.includes("distract")) topics.push("focus");
+      if(t.includes("friend") || t.includes("friends") || t.includes("ignore") || t.includes("friend issues")) topics.push("friends");
+      if(t.includes("anger") || t.includes("angry") || t.includes("mad") || t.includes("furious")) topics.push("anger");
+      if(t.includes("confidence") || t.includes("insecure") || t.includes("self esteem") || t.includes("embarrass")) topics.push("confidence");
+
+      // Build response: “a few steps”
+      const steps = [];
+      // universal first step
+      steps.push("First: try 60 seconds breathing (inhale 4, hold 2, exhale 6) twice.");
+
+      if(topics.includes("stress") || topics.includes("exams")){
+        steps.push("Next: pick ONE tiny task (2–10 minutes) to start. Starting reduces stress faster than thinking.");
+        steps.push("Make a mini plan: write 3 tasks → choose the easiest first → do 10 minutes.");
+      }
+      if(topics.includes("sleep")){
+        steps.push("Tonight: dim lights + stop heavy scrolling 30 minutes before bed.");
+        steps.push("Try: write your worries on paper, then write one fair response.");
+        steps.push("Keep a consistent wake-up time. That often helps more than forcing sleep.");
+      }
+      if(topics.includes("focus")){
+        steps.push("Remove one distraction (notifications / extra tabs).");
+        steps.push("Do a ‘2-minute start’. If it goes well, continue for 10 minutes.");
+        steps.push("Try Pomodoro: 25 minutes focus, 5 minutes break.");
+      }
+      if(topics.includes("friends")){
+        steps.push("If it feels safe: ask calmly later: “Hey, are we okay?”");
+        steps.push("Avoid guessing worst-case reasons. Ask for clarity once, kindly.");
+        steps.push("If they keep ignoring you repeatedly, talk to a trusted adult or counselor for support.");
+      }
+      if(topics.includes("anger")){
+        steps.push("Pause: take 3 breaths, step away for 2 minutes, then come back.");
+        steps.push("Say one calm sentence about your need (not an attack). Example: “I need a break.”");
+      }
+      if(topics.includes("sad")){
+        steps.push("Do one gentle activity: water, short walk, shower, or music — small care matters.");
+        steps.push("Talk to someone safe today (friend/parent/teacher). Don’t carry it alone.");
+      }
+      if(topics.includes("confidence")){
+        steps.push("Write one strength you used this week, even if small.");
+        steps.push("Try a ‘tiny brave action’ today (answer once in class, ask one question, or practice 5 minutes).");
+      }
+
+      // If no topics recognized, keep it general but still helpful
+      if(topics.length === 0){
+        steps.push("Tell me which area fits best: stress, sleep, confidence, focus, friendships, or anger — and I’ll suggest steps.");
+        steps.push("Meanwhile: write your worry → write a fair response (not harsh, not fake-positive).");
+      }
+
+      // End with supportive boundary
+      steps.push("If you feel unsafe: tell an adult immediately and call local emergency/helpline numbers.");
+
+      // Make it compact and readable
+      return "Here are a few steps:\n- " + steps.slice(0,6).join("\n- ");
+    }
+
+    function send(){
+      const input = document.getElementById("coachInput");
+      const text = (input.value || "").trim();
+      if(text.length < 2){ toast("Type a message"); return; }
+
+      thread.push({who:"user", text, at: nowISO()});
+      // Coach reply
+      const reply = coachReply(text);
+      thread.push({who:"coach", text: reply, at: nowISO()});
+
+      persist();
+      input.value = "";
+      renderChat();
+      toast("Sent ✓");
+    }
+
+    on("coachSend","click", send);
+    on("coachInput","keydown", (e)=>{
+      // Ctrl/Cmd + Enter to send (prevents accidental sends on Enter)
+      if((e.ctrlKey || e.metaKey) && e.key === "Enter"){
+        e.preventDefault();
+        send();
+      }
+    });
+
+    on("coachExamples","click", ()=>{
+      const examples = [
+        "I’m stressed about exams",
+        "I can’t sleep",
+        "I feel sad",
+        "I can’t focus",
+        "friend issues",
+        "anger",
+        "I feel insecure / low confidence"
+      ];
+      const pick = examples[Math.floor(Math.random()*examples.length)];
+      document.getElementById("coachInput").value = pick;
+      toast("Example added");
+    });
+
+    on("coachClear","click", ()=>{
+      if(!confirm("Clear this coach chat on this device?")) return;
+      const cm = getCoachChat();
+      cm[sid] = [];
+      saveCoachChat(cm);
+      toast("Cleared ✓");
+      renderStudentCoach();
+    });
+
+    renderChat();
+  }
+
+  // ============================================================
+  // FEATURE 2: EMOTION QUEST (old game restored)
+  // - school-life scenarios
+  // - choose healthiest response
+  // - teaches coping skills
+  // - no diagnosis
+  // - progress saved locally per student
+  // ============================================================
+  function renderEmotionQuest(){
+    const panel = document.getElementById("studentPanel");
+    const sid = session.studentId;
+
+    const QUESTS = [
+      {
+        id:"ignore_friend",
+        title:"Your friend ignores you at school.",
+        setup:"You feel hurt and your mind starts guessing worst-case reasons.",
+        choices:[
+          {text:"Ask calmly later: “Hey, are we okay?”", good:true,
+           why:"Healthy: it checks facts, reduces overthinking, and keeps respect."},
+          {text:"Post a sad status to get attention.", good:false,
+           why:"This may increase drama and doesn’t solve the real question."},
+          {text:"Stop talking forever without asking.", good:false,
+           why:"This keeps you stuck in guesses and can break friendships unnecessarily."}
+        ],
+        skill:"Coping skill: reality-checking + calm communication."
+      },
+      {
+        id:"exam_panic",
+        title:"You see a big exam timetable and panic.",
+        setup:"Your heart races and you feel like you can’t handle it.",
+        choices:[
+          {text:"Pick one tiny task (10 minutes) and start.", good:true,
+           why:"Starting breaks panic. Small steps build control."},
+          {text:"Scroll your phone for 1 hour to escape.", good:false,
+           why:"Avoidance feels good briefly but increases stress later."},
+          {text:"Tell yourself “I’m a failure” and give up.", good:false,
+           why:"Harsh self-talk lowers confidence and doesn’t help action."}
+        ],
+        skill:"Coping skill: tiny-start + kind self-talk."
+      },
+      {
+        id:"anger_burst",
+        title:"Someone teases you in class.",
+        setup:"You feel anger rising and want to shout back.",
+        choices:[
+          {text:"Pause, 3 breaths, step away for 2 minutes.", good:true,
+           why:"This gives your brain time to calm so you can choose a better response."},
+          {text:"Shout back immediately to ‘win’.", good:false,
+           why:"It can escalate conflict and get you in trouble."},
+          {text:"Hold it in and pretend you’re fine.", good:false,
+           why:"Bottling anger can build stress. Better to calm, then speak up respectfully."}
+        ],
+        skill:"Coping skill: pause + cool-down before responding."
+      },
+      {
+        id:"sleep_scroll",
+        title:"It’s late but you keep scrolling.",
+        setup:"You know you need sleep, but your brain wants ‘one more’ video.",
+        choices:[
+          {text:"Put phone away and do a short wind-down routine.", good:true,
+           why:"Protects sleep, mood, and memory. Small routines help more than willpower."},
+          {text:"Keep scrolling until you’re exhausted.", good:false,
+           why:"Sleep quality drops and tomorrow becomes harder."},
+          {text:"Tell yourself you’ll sleep ‘later’ every night.", good:false,
+           why:"Inconsistent sleep builds stress over time."}
+        ],
+        skill:"Coping skill: boundaries + bedtime routine."
+      }
+    ];
+
+    const questMap = getQuest();
+    const my = questMap[sid] || { idx: 0, streak: 0, lastPlayedDay: null, correct: 0, total: 0 };
+    // Keep idx within range
+    my.idx = Math.max(0, Math.min(QUESTS.length-1, my.idx));
+
+    const q = QUESTS[my.idx];
+    const progressPct = Math.round(((my.idx) / (QUESTS.length)) * 100);
+
+    panel.innerHTML = `
+      <div class="stack">
+        <div class="note ok">
+          <strong>Emotion Quest</strong><br>
+          Choose the healthiest response. Learn coping skills through school-life scenarios.
+          <div class="help" style="margin-top:8px">This game is for learning coping skills. It doesn’t diagnose.</div>
+        </div>
+
+        <div class="questBox">
+          <div class="row" style="justify-content:space-between; align-items:center">
+            <div>
+              <div class="pillrow" style="gap:8px">
+                <span class="pill">🎯 <b>Scenario ${my.idx+1}</b> / ${QUESTS.length}</span>
+                <span class="pill">✅ <b>${my.correct}</b> correct</span>
+                <span class="pill">🧠 streak <b>${my.streak}</b></span>
+              </div>
+            </div>
+            <div class="row">
+              <button class="btn" id="questPrev">Prev</button>
+              <button class="btn" id="questNext">Next</button>
+            </div>
+          </div>
+
+          <div class="divider"></div>
+
+          <div class="questProgress" aria-label="Progress bar"><div id="questProgFill" style="width:${progressPct}%"></div></div>
+
+          <div class="divider"></div>
+
+          <h3 style="margin:6px 0 6px">${escapeHTML(q.title)}</h3>
+          <p class="muted" style="margin:0 0 8px">${escapeHTML(q.setup)}</p>
+
+          <div class="list" id="questChoices"></div>
+
+          <div id="questFeedback" class="note" style="display:none"></div>
+
+          <div class="divider"></div>
+          <div class="note warn">
+            <strong>Safety note</strong><br>
+            If you feel unsafe or think you might harm yourself, stop and tell a trusted adult immediately.
+          </div>
+        </div>
+
+        <div class="row">
+          <button class="btn primary" id="questRestart">Restart quest</button>
+          <button class="btn" id="questCoachJump">Ask AI wellbeing coach</button>
+        </div>
+      </div>
+    `;
+
+    function persist(){
+      const qm = getQuest();
+      qm[sid] = my;
+      saveQuest(qm);
+    }
+
+    function renderChoices(){
+      const wrap = document.getElementById("questChoices");
+      wrap.innerHTML = q.choices.map((c, i)=>`
+        <button class="choiceBtn" id="choice_${i}">
+          ${escapeHTML(c.text)}
+          <small>${i===0 ? "" : ""}</small>
+        </button>
+      `).join("");
+
+      q.choices.forEach((c,i)=>{
+        on(`choice_${i}`,"click", ()=>{
+          // Update stats
+          my.total += 1;
+
+          const today = todayKey();
+          // streak only counts if played today (prevents farming across days with reloads)
+          if(my.lastPlayedDay !== today){
+            my.lastPlayedDay = today;
+            my.streak = 0;
+          }
+
+          const feedback = document.getElementById("questFeedback");
+          feedback.style.display = "block";
+
+          if(c.good){
+            my.correct += 1;
+            my.streak += 1;
+            feedback.className = "note ok";
+            feedback.innerHTML = `
+              <strong>Good choice ✅</strong><br>
+              ${escapeHTML(c.why)}<br>
+              <div class="help" style="margin-top:8px">${escapeHTML(q.skill)}</div>
+            `;
+            toast("Nice ✓");
+          }else{
+            my.streak = 0;
+            feedback.className = "note warn";
+            feedback.innerHTML = `
+              <strong>Not the healthiest ❗</strong><br>
+              ${escapeHTML(c.why)}<br>
+              <div class="help" style="margin-top:8px">${escapeHTML(q.skill)}</div>
+            `;
+            toast("Try again");
+          }
+
+          persist();
+
+          // Disable choices after one selection to keep it "one decision"
+          q.choices.forEach((_,j)=>{
+            const b = document.getElementById(`choice_${j}`);
+            if(b) b.disabled = true;
+          });
+        });
+      });
+    }
+
+    renderChoices();
+
+    on("questPrev","click", ()=>{
+      my.idx = Math.max(0, my.idx-1);
+      persist();
+      renderEmotionQuest();
+    });
+
+    on("questNext","click", ()=>{
+      my.idx = Math.min(QUESTS.length-1, my.idx+1);
+      persist();
+      renderEmotionQuest();
+    });
+
+    on("questRestart","click", ()=>{
+      if(!confirm("Restart Emotion Quest progress on this device?")) return;
+      my.idx = 0; my.streak = 0; my.correct = 0; my.total = 0; my.lastPlayedDay = null;
+      persist();
+      toast("Restarted ✓");
+      renderEmotionQuest();
+    });
+
+    on("questCoachJump","click", ()=>{
+      const tab = document.getElementById("sTabCoach");
+      if(tab) tab.click();
+    });
+  }
+
+  // ---------------------------
+  // HISTORY
+  // ---------------------------
+  function renderStudentHistory(){
+    const panel = document.getElementById("studentPanel");
+    const sid = session.studentId;
+    const all = getCheckins().filter(c=>c.studentId===sid).sort((a,b)=> (b.createdAt||"").localeCompare(a.createdAt||""));
+    const recent = all.slice(0, 12);
+
+    const ecoMap = getEcoActions();
+    const myEco = Array.isArray(ecoMap[sid]) ? ecoMap[sid] : [];
+    const ecoToday = myEco.filter(x=>x.day===todayKey()).length;
+
+    const questMap = getQuest();
+    const myQ = questMap[sid] || { idx:0, streak:0, correct:0, total:0 };
+
+    panel.innerHTML = `
+      <div class="stack">
+        <div class="note">
+          <strong>My history (on this device)</strong><br>
+          This view helps you notice patterns. Nothing here is shared.
+        </div>
+
+        <div class="kpi">
+          <div class="box"><div class="t">Eco-actions today</div><div class="v">${ecoToday}</div></div>
+          <div class="box"><div class="t">Emotion Quest correct</div><div class="v">${myQ.correct || 0}</div></div>
+          <div class="box"><div class="t">Check-ins total</div><div class="v">${all.length}</div></div>
+        </div>
+
+        ${recent.length ? `
+          <div class="list">
+            ${recent.map(c => `
+              <div class="item">
+                <h3>${escapeHTML(fmtDateShort(c.createdAt))} • ${escapeHTML(c.mood || "—")}</h3>
+                <p><span class="muted">Sleep:</span> ${c.sleep==null ? "—" : escapeHTML(c.sleep)}h &nbsp;•&nbsp; <span class="muted">Study:</span> ${c.study==null ? "—" : escapeHTML(c.study)} min</p>
+                ${c.note ? `<div class="divider"></div><p>${escapeHTML(c.note)}</p>` : ""}
+              </div>
+            `).join("")}
+          </div>
+        ` : `<div class="note warn">No check-ins yet. Start with a quick check-in — even 10 seconds is enough.</div>`}
+
+        <div class="row"><button class="btn danger" id="deleteMyData">Delete my data (this device)</button></div>
+
+        <div class="help">Deleting removes your check-ins, habits, eco-actions, coach chat, and Emotion Quest progress from this browser on this device.</div>
+      </div>
+    `;
+
+    on("deleteMyData","click", ()=>{
+      if(!confirm("Delete your data from this device? This cannot be undone.")) return;
+
+      saveCheckins(getCheckins().filter(c=>c.studentId !== sid));
+
+      const habitsMap = getHabits(); delete habitsMap[sid]; saveHabits(habitsMap);
+      const ecoMap2 = getEcoActions(); delete ecoMap2[sid]; saveEcoActions(ecoMap2);
+
+      const coachMap = getCoachChat(); delete coachMap[sid]; saveCoachChat(coachMap);
+      const questMap2 = getQuest(); delete questMap2[sid]; saveQuest(questMap2);
+
+      const students = getStudents(); delete students[sid]; saveStudents(students);
+
+      toast("Deleted ✓");
+      logout();
+    });
+  }
+
+  // ---------------------------
+  // SCHOOL DASHBOARD (no AI)
+  // ---------------------------
+  function renderSchoolHome(){
+    setPage("School dashboard", "Aggregated insights computed locally from students who used this same device. No individual data is shown.");
+    mount(`
+      <div class="stack">
+        <div class="pillrow">
+          <span class="pill">🏫 <b>${escapeHTML(settings.schoolName)}</b></span>
+          <span class="pill">🔒 Local-only aggregation</span>
+          <span class="pill">🚫 No individual monitoring</span>
+          <span class="pill">🤖 No AI in school view</span>
+        </div>
+
+        <div class="tabs" role="tablist" aria-label="School tabs">
+          <button class="tab active" id="schTabInsights" role="tab" aria-selected="true">Insights</button>
+          <button class="tab" id="schTabActions" role="tab" aria-selected="false">Suggested actions</button>
+          <button class="tab" id="schTabAdmin" role="tab" aria-selected="false">Admin</button>
+        </div>
+
+        <div id="schoolPanel"></div>
+      </div>
+    `);
+
+    on("schTabInsights","click", ()=>activate("insights"));
+    on("schTabActions","click", ()=>activate("actions"));
+    on("schTabAdmin","click", ()=>activate("admin"));
+
+    function activate(which){
+      ["schTabInsights","schTabActions","schTabAdmin"].forEach(id=>{
+        const el = document.getElementById(id);
+        if(!el) return;
+        const match = (id === (which==="insights"?"schTabInsights": which==="actions"?"schTabActions":"schTabAdmin"));
+        el.classList.toggle("active", match);
+        el.setAttribute("aria-selected", match ? "true":"false");
+      });
+      if(which==="insights") renderSchoolInsights();
+      else if(which==="actions") renderSchoolActions();
+      else renderSchoolAdmin();
+    }
+    activate("insights");
+  }
+
+  function computeSchoolAggregation(){
+    const checkins = getCheckins();
+    const studentsCount = Object.keys(getStudents()).length;
+
+    const now = new Date();
+    const last7 = checkins.filter(c=>{
+      const d = new Date(c.createdAt || c.day || nowISO());
+      const diffDays = (now - d) / (1000*60*60*24);
+      return diffDays <= 7.5;
+    });
+
+    const moodCounts = {};
+    for(const c of last7){
+      const m = c.mood || "unknown";
+      moodCounts[m] = (moodCounts[m] || 0) + 1;
+    }
+
+    const sleepVals = last7.map(c=>c.sleep).filter(v=>typeof v === "number" && !Number.isNaN(v));
+    const studyVals = last7.map(c=>c.study).filter(v=>typeof v === "number" && !Number.isNaN(v));
+    const avg = (arr)=> arr.length ? (arr.reduce((a,b)=>a+b,0)/arr.length) : null;
+
+    const avgSleep = avg(sleepVals);
+    const avgStudy = avg(studyVals);
+
+    const habitsMap = getHabits();
+    const t = todayKey();
+    let habitMarksToday = 0;
+    let habitParticipants = 0;
+    for(const sid in habitsMap){
+      const h = habitsMap[sid] || {};
+      const keys = ["water","move","screenBreak","gratitude","bedtime"];
+      const doneAny = keys.some(k => Array.isArray(h[k]) && h[k].includes(t));
+      if(doneAny) habitParticipants++;
+      habitMarksToday += keys.reduce((acc,k)=> acc + ((Array.isArray(h[k]) && h[k].includes(t)) ? 1 : 0), 0);
+    }
+
+    function topMood(){
+      const entries = Object.entries(moodCounts).sort((a,b)=>b[1]-a[1]);
+      return entries.length ? entries[0][0] : "—";
+    }
+
+    return { studentsCount, last7Count: last7.length, moodCounts, topMood: topMood(), avgSleep, avgStudy, habitMarksToday, habitParticipants };
+  }
+
+  function renderSchoolInsights(){
+    const panel = document.getElementById("schoolPanel");
+    const a = computeSchoolAggregation();
+
+    const avgSleepStr = a.avgSleep == null ? "—" : (Math.round(a.avgSleep*10)/10).toFixed(1) + "h";
+    const avgStudyStr = a.avgStudy == null ? "—" : Math.round(a.avgStudy) + " min";
+    const sampleNote = `Based on ${a.last7Count} check-ins on this device (last 7 days).`;
+
+    panel.innerHTML = `
+      <div class="stack">
+        <div class="note ok">
+          <strong>Local-only school insights</strong><br>
+          ${escapeHTML(sampleNote)} No individual student logs, notes, or identities are shown.
+        </div>
+
+        <div class="kpi">
+          <div class="box"><div class="t">Students on this device</div><div class="v">${a.studentsCount}</div></div>
+          <div class="box"><div class="t">Check-ins (last 7 days)</div><div class="v">${a.last7Count}</div></div>
+          <div class="box"><div class="t">Most common mood</div><div class="v">${escapeHTML(a.topMood)}</div></div>
+        </div>
+
+        <div class="card" style="box-shadow:none; border-radius:18px; background: rgba(255,255,255,.60); border:1px solid rgba(24,55,90,.10)">
+          <div class="card-body">
+            <div class="stack">
+              <div class="item"><h3>Average sleep (last 7 days)</h3><p class="muted">${escapeHTML(avgSleepStr)} <span class="help">(computed locally; ignores blank entries)</span></p></div>
+              <div class="item"><h3>Average focused study (last 7 days)</h3><p class="muted">${escapeHTML(avgStudyStr)} <span class="help">(computed locally; ignores blank entries)</span></p></div>
+              <div class="item"><h3>Habits marked today (this device)</h3><p class="muted">${a.habitMarksToday} habit marks • ${a.habitParticipants} students did at least 1 habit today</p></div>
+              <div class="note warn"><strong>Interpretation</strong><br>These insights reflect only the small set of students using this device — not the entire school. Use as awareness prompts, not evaluation.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    `;
+  }
+
+  function renderSchoolActions(){
+    const panel = document.getElementById("schoolPanel");
+    const a = computeSchoolAggregation();
+    const actions = [];
+
+    actions.push({t:"Wellbeing minute at the start of class", d:"1 minute breathing or grounding before lessons. Normalizes wellbeing habits without singling anyone out."});
+
+    if(a.avgSleep != null && a.avgSleep < 7){
+      actions.push({t:"Sleep awareness mini-campaign (1 week)", d:"Share 3 simple tips: consistent wake time, screen down 30 min, wind-down routine. Keep it supportive and optional."});
+    }
+
+    if(a.last7Count > 0 && (a.moodCounts.stressed || 0) >= Math.max(2, Math.floor(a.last7Count * 0.35))){
+      actions.push({t:"Exam-week stress support", d:"Offer short revision planning tips, calm corners, and teacher reminders: ‘stress is normal — small steps help’."});
+    }
+
+    if(a.habitParticipants === 0 && a.studentsCount > 0){
+      actions.push({t:"Habit week challenge (opt-in)", d:"Students pick 1 habit for 5 days (water / short walk / gratitude). Celebrate participation, not ‘performance’."});
+    }
+
+    panel.innerHTML = `
+      <div class="stack">
+        <div class="note"><strong>Suggested actions (non-clinical)</strong><br>Simple wellbeing activities schools can run without collecting personal student data.</div>
+        <div class="list">
+          ${actions.map(x=>`<div class="item"><h3>${escapeHTML(x.t)}</h3><p>${escapeHTML(x.d)}</p></div>`).join("")}
+        </div>
+        <div class="note warn"><strong>Guardrails</strong><br>No individual follow-up based on this dashboard. If a student asks for help directly, follow normal school safeguarding procedures.</div>
+      </div>
+    `;
+  }
+
+  function renderSchoolAdmin(){
+    const panel = document.getElementById("schoolPanel");
+    panel.innerHTML = `
+      <div class="stack">
+        <div class="note"><strong>Admin controls (this device only)</strong><br>Useful for demos and pilots. In a real pilot, school devices would be managed by school IT/admin.</div>
+
+        <div class="card" style="box-shadow:none; border-radius:18px; background: rgba(255,255,255,.60); border:1px solid rgba(24,55,90,.10)">
+          <div class="card-body">
+            <div class="stack">
+              <div class="row">
+                <div class="field">
+                  <label for="schoolName">School name label</label>
+                  <input id="schoolName" value="${escapeHTML(settings.schoolName)}" maxlength="50" />
+                </div>
+              </div>
+
+              <div class="row">
+                <button class="btn primary" id="saveSchoolName">Save</button>
+                <button class="btn danger" id="wipeDeviceData">Wipe ALL device data</button>
+              </div>
+
+              <div class="note warn"><strong>Wipe data</strong><br>Wiping clears student profiles, check-ins, habits, eco-actions, coach chat, and Emotion Quest on this browser on this device only.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    `;
+
+    on("saveSchoolName","click", ()=>{
+      const v = document.getElementById("schoolName").value.trim();
+      settings.schoolName = v || "Your School";
+      saveJSON(K.SETTINGS, settings);
+      toast("Saved ✓");
+      renderSchoolHome();
+    });
+
+    on("wipeDeviceData","click", ()=>{
+      if(!confirm("Wipe ALL MindUrMind data from this device/browser? This cannot be undone.")) return;
+      localStorage.removeItem(K.SESSION);
+      localStorage.removeItem(K.STUDENTS);
+      localStorage.removeItem(K.CHECKINS);
+      localStorage.removeItem(K.HABITS);
+      localStorage.removeItem(K.ECOACTIONS);
+      localStorage.removeItem(K.COACHCHAT);
+      localStorage.removeItem(K.QUEST);
+      localStorage.removeItem(K.SETTINGS);
+      toast("Wiped ✓");
+      logout();
+    });
+  }
+
+  // ---------------------------
+  // Family Corner (no login)
+  // ---------------------------
+  function renderFamilyCorner(){
+    setPage("Family Corner", "Read-only information for parents/guardians. No parent login is used in this pilot.");
+    mount(`
+      <div class="stack">
+        <div class="note ok">
+          <strong>Why no parent login?</strong><br>
+          In school pilots, students engage more honestly when they know their private reflections are not visible to anyone. Parents still get guidance and conversation tips here.
+        </div>
+
+        <div class="item"><h3>What MindUrMind is</h3><p>A school-based wellbeing awareness and self-learning tool. It helps students build positive habits and emotional literacy.</p></div>
+        <div class="item"><h3>What MindUrMind is not</h3><p>Not clinical assessment, diagnosis, therapy, or risk scoring. Not a substitute for professional care.</p></div>
+        <div class="item"><h3>Data & privacy (plain language)</h3><p><b>On-device only:</b> student notes and reflections are stored on the device only.<br><b>School insights:</b> aggregated locally from students using the same device.<br>No cloud upload. No central database. No individual monitoring.</p></div>
+
+        <div class="item">
+          <h3>Parent conversation tips</h3>
+          <p class="muted">Try these simple approaches:</p>
+          <ul style="margin:10px 0 0; padding-left:18px; color: rgba(16,33,58,.80); line-height:1.6">
+            <li>Ask: “What was the hardest part of today?” (then listen without fixing)</li>
+            <li>Normalize feelings: “It makes sense you feel that way.”</li>
+            <li>Help with one small step: “What’s one tiny thing that would help?”</li>
+            <li>Encourage sleep and routines gently, not as punishment.</li>
+            <li>If concerns persist, speak with school counselor or a healthcare professional.</li>
+          </ul>
+        </div>
+
+        <div class="row"><button class="btn" id="backFromFamily">Back</button></div>
+      </div>
+    `);
+    on("backFromFamily","click", ()=> session ? renderAppHome() : renderSignIn());
+  }
+
+  // ---------------------------
+  // About & Privacy
+  // ---------------------------
+  function renderAboutPrivacy(){
+    setPage("About & Privacy", "Clear boundaries for schools and students. This is a wellbeing awareness pilot.");
+    mount(`
+      <div class="stack">
+        <div class="note">
+          <strong>Positioning statement (pilot-ready)</strong><br>
+          MindUrMind is a school-based wellbeing awareness and self-learning initiative designed to help students build positive habits, emotional literacy, and self-reflection skills.<br><br>
+          The app does not perform mental health assessments, diagnosis, or therapy.<br>
+          Student reflections remain private and stored on the device.<br>
+          School insights, when enabled, are aggregated summaries generated locally from participating students on the same device.
+        </div>
+
+        <div class="item"><h3>What data is stored?</h3><p><b>On-device only:</b> student check-ins (mood, optional note, sleep & study if entered), habit marks, eco-actions, AI coach chat, Emotion Quest progress.<br><b>Not stored centrally:</b> there is no server and no cloud upload in this pilot prototype.</p></div>
+        <div class="item"><h3>Who can see what?</h3><p><b>Student:</b> their own entries on this device.<br><b>School view:</b> aggregated trends computed locally, with no individual entries or notes.<br><b>Parents:</b> no login; Family Corner is information-only.</p></div>
+        <div class="item"><h3>Safety note</h3><p>If anyone feels unsafe or in immediate danger, they should contact local emergency services or a trusted adult immediately. The app is not designed for crisis support.</p></div>
+
+        <div class="row"><button class="btn" id="backFromAbout">Back</button></div>
+      </div>
+    `);
+    on("backFromAbout","click", ()=> session ? renderAppHome() : renderSignIn());
+  }
+
+  // ---------------------------
+  // Boot
+  // ---------------------------
+  function boot(){
+    if(session && session.role){
+      logoutBtn.style.display = "inline-flex";
+      setRoleBadge(session.role);
+      renderAppHome();
+    }else{
+      renderSignIn();
+    }
+  }
   boot();
-  toast("Reset done");
-}
 
-/* ---------- utils ---------- */
-function cryptoRandom(){
-  // short id
-  return Math.random().toString(16).slice(2) + Date.now().toString(16).slice(4);
-}
-function capitalize(s){ return s.charAt(0).toUpperCase()+s.slice(1); }
-function escapeHtml(str){
-  return String(str).replace(/[&<>"']/g, (m)=>({
-    "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"
-  }[m]));
-}
-
-/* ---------- init defaults for non-auth UI ---------- */
-setRole(state.ui.lastRole || "student");
+})();
 </script>
 </body>
 </html>

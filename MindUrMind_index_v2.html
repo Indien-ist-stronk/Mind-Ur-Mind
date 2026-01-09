@@ -1,0 +1,2223 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>MindUrMind</title>
+<meta name="description" content="A student wellbeing and learning pilot: habits, routines, calm tools, and privacy-first school insights (aggregated on-device)." />
+<style>
+  :root{
+    --bg0:#f7fbff;
+    --bg1:#f4fff9;
+    --card:rgba(255,255,255,.82);
+    --card2:rgba(255,255,255,.92);
+    --text:#0f172a;
+    --muted:#475569;
+    --line:rgba(15,23,42,.10);
+    --shadow: 0 18px 45px rgba(15,23,42,.10);
+    --shadow2: 0 10px 22px rgba(15,23,42,.08);
+    --radius: 22px;
+
+    --p1:#60a5fa;   /* sky */
+    --p2:#34d399;   /* mint */
+    --p3:#fbbf24;   /* sunshine */
+    --p4:#fb7185;   /* coral */
+    --p5:#a78bfa;   /* lavender */
+  }
+
+  *{box-sizing:border-box}
+  html,body{height:100%}
+  body{
+    margin:0;
+    font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial, "Noto Sans", "Apple Color Emoji", "Segoe UI Emoji";
+    color:var(--text);
+    background:
+      radial-gradient(1000px 500px at 10% 10%, rgba(96,165,250,.30), transparent 60%),
+      radial-gradient(900px 520px at 85% 20%, rgba(52,211,153,.28), transparent 62%),
+      radial-gradient(800px 520px at 65% 85%, rgba(167,139,250,.24), transparent 60%),
+      linear-gradient(180deg, var(--bg0), var(--bg1));
+    overflow-x:hidden;
+  }
+
+  /* floating calm shapes */
+  .blob{
+    position:fixed;
+    inset:auto auto auto auto;
+    width:420px; height:420px;
+    border-radius: 45% 55% 55% 45% / 55% 45% 55% 45%;
+    filter: blur(0px);
+    opacity:.16;
+    z-index:-1;
+    pointer-events:none;
+    transform: translate3d(0,0,0);
+    animation: floaty 14s ease-in-out infinite;
+  }
+  .blob.b1{ left:-140px; top:-140px; background:radial-gradient(circle at 30% 35%, rgba(96,165,250,.9), rgba(96,165,250,.05) 60%); }
+  .blob.b2{ right:-150px; top:20px; width:460px; height:460px; background:radial-gradient(circle at 40% 35%, rgba(52,211,153,.9), rgba(52,211,153,.05) 60%); animation-duration:18s;}
+  .blob.b3{ left:40%; bottom:-220px; width:520px; height:520px; background:radial-gradient(circle at 45% 40%, rgba(167,139,250,.9), rgba(167,139,250,.05) 60%); animation-duration:22s;}
+
+  @keyframes floaty{
+    0%{ transform: translate3d(0,0,0) rotate(0deg) scale(1); }
+    50%{ transform: translate3d(18px, -14px,0) rotate(8deg) scale(1.03); }
+    100%{ transform: translate3d(0,0,0) rotate(0deg) scale(1); }
+  }
+
+  @media (prefers-reduced-motion: reduce){
+    *{ animation:none !important; transition:none !important; scroll-behavior:auto !important; }
+  }
+
+  .wrap{ max-width:1100px; margin:0 auto; padding:18px 16px 40px; }
+  header{
+    display:flex; align-items:center; justify-content:space-between; gap:12px;
+    padding:14px 14px;
+    border:1px solid var(--line);
+    background:rgba(255,255,255,.55);
+    border-radius: var(--radius);
+    backdrop-filter: blur(10px);
+    box-shadow: var(--shadow2);
+  }
+
+  .brand{ display:flex; align-items:center; gap:10px; min-width:240px; }
+  .logo{
+    width:42px;height:42px;border-radius:14px;
+    background:
+      radial-gradient(circle at 35% 35%, rgba(255,255,255,.95), rgba(255,255,255,.20) 55%),
+      linear-gradient(135deg, rgba(96,165,250,.95), rgba(52,211,153,.85));
+    box-shadow: 0 10px 20px rgba(96,165,250,.25);
+    position:relative;
+    overflow:hidden;
+  }
+  .logo:after{
+    content:"";
+    position:absolute; inset:-40%;
+    background: radial-gradient(circle at 30% 30%, rgba(255,255,255,.75), transparent 55%);
+    transform: rotate(25deg);
+    opacity:.75;
+  }
+  h1{ font-size:1.05rem; margin:0; letter-spacing:.2px;}
+  .tagline{ font-size:.82rem; color:var(--muted); margin:0; }
+
+  .top-actions{ display:flex; align-items:center; gap:8px; flex-wrap:wrap; justify-content:flex-end; }
+  .pill{
+    display:inline-flex; align-items:center; gap:8px;
+    padding:8px 10px;
+    border:1px solid var(--line);
+    background: rgba(255,255,255,.76);
+    border-radius: 999px;
+    font-size:.86rem;
+    color:var(--muted);
+  }
+
+  .btn{
+    appearance:none; border:1px solid var(--line);
+    background: rgba(255,255,255,.85);
+    color:var(--text);
+    padding:10px 12px;
+    border-radius: 14px;
+    cursor:pointer;
+    box-shadow: 0 10px 18px rgba(15,23,42,.06);
+    transition: transform .15s ease, box-shadow .15s ease, background .15s ease;
+    font-weight:750;
+  }
+  .btn:hover{ transform: translateY(-1px); box-shadow: 0 14px 26px rgba(15,23,42,.10); }
+  .btn:active{ transform: translateY(0px) scale(.99); }
+  .btn.small{ padding:8px 10px; border-radius: 12px; font-size:.86rem; }
+  .btn.primary{
+    background: linear-gradient(135deg, rgba(96,165,250,.95), rgba(52,211,153,.85));
+    border-color: rgba(96,165,250,.25);
+    color:#0b1220;
+  }
+  .btn.coral{
+    background: linear-gradient(135deg, rgba(251,113,133,.92), rgba(251,191,36,.88));
+    border-color: rgba(251,113,133,.25);
+    color:#0b1220;
+  }
+  .btn.ghost{ background: rgba(255,255,255,.55); }
+  .btn.danger{
+    background: linear-gradient(135deg, rgba(251,113,133,.35), rgba(255,255,255,.85));
+    border-color: rgba(251,113,133,.25);
+  }
+  .btn:focus{ outline:3px solid rgba(96,165,250,.35); outline-offset:2px; }
+
+  main{ margin-top:14px; }
+
+  .grid{ display:grid; grid-template-columns: 1.25fr .75fr; gap:14px; }
+  @media (max-width: 980px){ .grid{ grid-template-columns: 1fr; } }
+
+  .card{
+    border:1px solid var(--line);
+    background: var(--card);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    padding:14px;
+    backdrop-filter: blur(10px);
+  }
+  .card.solid{ background: var(--card2); }
+
+  .card h2{ font-size:1.02rem; margin:0 0 6px;}
+  .card p{ margin:6px 0 0; color:var(--muted); line-height:1.55; }
+  .fineprint{ font-size:.82rem; color:var(--muted); }
+
+  .hide{ display:none !important; }
+
+  .tabs{
+    display:flex; gap:8px; flex-wrap:wrap;
+    padding:10px;
+    border:1px solid var(--line);
+    background: rgba(255,255,255,.55);
+    border-radius: 18px;
+  }
+  .tab{
+    display:inline-flex; align-items:center; gap:8px;
+    padding:10px 12px;
+    border-radius: 14px;
+    border:1px solid transparent;
+    cursor:pointer;
+    font-weight:800;
+    color: var(--muted);
+    transition: background .15s ease, transform .15s ease, border-color .15s ease;
+  }
+  .tab:hover{ background: rgba(255,255,255,.6); transform: translateY(-1px); }
+  .tab.active{
+    background: rgba(255,255,255,.88);
+    border-color: rgba(96,165,250,.22);
+    color: var(--text);
+    box-shadow: 0 12px 22px rgba(15,23,42,.08);
+  }
+
+  .row{ display:flex; gap:10px; flex-wrap:wrap; align-items:center; }
+  label{ font-size:.86rem; color:var(--muted); font-weight:750; display:block; margin:8px 0 6px; }
+  input, select, textarea{
+    width:100%;
+    padding:11px 12px;
+    border-radius: 14px;
+    border:1px solid rgba(15,23,42,.12);
+    background: rgba(255,255,255,.92);
+    color: var(--text);
+    outline:none;
+    transition: box-shadow .15s ease, border-color .15s ease;
+    font-size:.96rem;
+  }
+  textarea{ min-height:92px; resize:vertical; }
+  input:focus, select:focus, textarea:focus{
+    border-color: rgba(96,165,250,.45);
+    box-shadow: 0 0 0 4px rgba(96,165,250,.18);
+  }
+
+  .kpi{ display:grid; grid-template-columns: repeat(3, 1fr); gap:10px; margin-top:10px;}
+  @media(max-width:720px){ .kpi{ grid-template-columns:1fr; } }
+  .k{ padding:12px; border:1px solid var(--line); background: rgba(255,255,255,.72); border-radius: 18px; }
+  .big{ font-size:1.4rem; font-weight:900; }
+  .small{ font-size:.85rem; color:var(--muted); margin-top:2px;}
+
+  .chips{ display:flex; gap:8px; flex-wrap:wrap; margin-top:10px;}
+  .chip{
+    padding:8px 10px;
+    border-radius: 999px;
+    border:1px solid var(--line);
+    background: rgba(255,255,255,.74);
+    cursor:pointer;
+    font-weight:800;
+    color:var(--muted);
+    transition: transform .12s ease, background .12s ease;
+  }
+  .chip:hover{ transform: translateY(-1px); background: rgba(255,255,255,.92); }
+  .chip.on{ background: rgba(52,211,153,.18); color:#0b1220; border-color: rgba(52,211,153,.25); }
+
+  .split{ display:grid; grid-template-columns: 1fr 1fr; gap:10px; }
+  @media(max-width:720px){ .split{ grid-template-columns:1fr; } }
+
+  .list{ margin:8px 0 0; padding:0; list-style:none; }
+  .list li{
+    padding:10px 10px;
+    border:1px solid var(--line);
+    background: rgba(255,255,255,.72);
+    border-radius: 16px;
+    margin-bottom:8px;
+    display:flex; align-items:flex-start; justify-content:space-between; gap:10px;
+  }
+
+  .badge{
+    display:inline-flex; align-items:center; gap:8px;
+    padding:8px 10px;
+    border-radius: 999px;
+    background: rgba(167,139,250,.16);
+    border:1px solid rgba(167,139,250,.25);
+    color:#0b1220;
+    font-weight:850;
+    font-size:.86rem;
+  }
+
+  /* calm animated orb */
+  .orb{
+    width:120px;height:120px;border-radius: 999px;
+    background:
+      radial-gradient(circle at 35% 35%, rgba(255,255,255,.95), rgba(255,255,255,.25) 55%),
+      radial-gradient(circle at 65% 70%, rgba(96,165,250,.85), rgba(96,165,250,.10) 60%),
+      radial-gradient(circle at 35% 70%, rgba(52,211,153,.72), rgba(52,211,153,.08) 62%);
+    border:1px solid rgba(255,255,255,.7);
+    box-shadow: 0 18px 40px rgba(96,165,250,.18);
+    animation: breathe 6s ease-in-out infinite;
+  }
+  @keyframes breathe{
+    0%{ transform: scale(1); filter:saturate(1); }
+    50%{ transform: scale(1.05); filter:saturate(1.1); }
+    100%{ transform: scale(1); filter:saturate(1); }
+  }
+
+  .toast{
+    position:fixed; left:50%; bottom:18px;
+    transform: translateX(-50%);
+    background: rgba(15,23,42,.86);
+    color:white;
+    padding:10px 14px;
+    border-radius: 999px;
+    box-shadow: 0 18px 40px rgba(15,23,42,.22);
+    opacity:0; pointer-events:none;
+    transition: opacity .2s ease, transform .2s ease;
+    font-weight:750;
+    z-index:1000;
+  }
+  .toast.on{ opacity:1; transform: translateX(-50%) translateY(-2px); }
+
+  .divider{ height:1px; background: var(--line); margin:12px 0; }
+
+  .progress{
+    width:100%; height:10px; border-radius: 999px;
+    background: rgba(15,23,42,.08); overflow:hidden; border:1px solid rgba(15,23,42,.08);
+  }
+  .progress > div{
+    height:100%;
+    width:0%;
+    background: linear-gradient(90deg, rgba(52,211,153,.95), rgba(96,165,250,.95), rgba(167,139,250,.95));
+    border-radius: 999px;
+    transition: width .25s ease;
+  }
+
+  .mini{
+    border:1px solid var(--line);
+    border-radius: 18px;
+    padding:12px;
+    background: rgba(255,255,255,.70);
+  }
+
+  .gamebox{
+    border:1px solid var(--line);
+    border-radius: 22px;
+    padding:14px;
+    background: rgba(255,255,255,.76);
+    position:relative;
+    overflow:hidden;
+  }
+  .spark{
+    position:absolute; width:10px; height:10px; border-radius: 999px;
+    background: rgba(251,191,36,.9);
+    opacity:.0;
+    pointer-events:none;
+  }
+
+  .pill-note{
+    font-size:.84rem; color:var(--muted);
+    padding:10px 12px; border:1px dashed rgba(15,23,42,.18);
+    border-radius: 18px; background: rgba(255,255,255,.55);
+    line-height:1.5;
+  }
+
+  .safety{
+    border:1px solid rgba(251,113,133,.30);
+    background: rgba(251,113,133,.10);
+    border-radius: 18px;
+    padding:12px;
+  }
+
+  .sr-only{
+    position:absolute;
+    width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0;
+  }
+</style>
+</head>
+<body>
+<div class="blob b1"></div><div class="blob b2"></div><div class="blob b3"></div>
+
+<div class="wrap">
+  <header>
+    <div class="brand">
+      <div class="logo" aria-hidden="true"></div>
+      <div>
+        <h1>MindUrMind</h1>
+        <p class="tagline">Wellbeing • Study routines • Healthy habits • Privacy-first (on-device)</p>
+      </div>
+    </div>
+
+    <div class="top-actions">
+      <div class="pill" id="statusPill">Signed out</div>
+      <button class="btn small ghost" id="btnSignOut" onclick="signOut()" disabled>Sign out</button>
+      <button class="btn small danger" onclick="resetAll()">Reset data</button>
+    </div>
+  </header>
+
+  <main>
+    <!-- AUTH -->
+    <section class="card solid" id="auth">
+      <h2>Sign in</h2>
+      <p>Select your role to continue. This pilot stores logs on this device only.</p>
+
+      <div class="tabs" style="margin-top:10px;">
+        <div class="tab active" data-role="student" onclick="setRole('student')">🧑‍🎓 Student</div>
+        <div class="tab" data-role="school" onclick="setRole('school')">🏫 School</div>
+      </div>
+
+      <div class="split" style="margin-top:10px;">
+        <div class="mini" id="studentAuth">
+          <div class="row" style="justify-content:space-between;">
+            <span class="badge">Student login</span>
+            <button class="btn small ghost" onclick="autofill('student')">Auto-fill</button>
+          </div>
+          <label for="stEmail">Student email</label>
+          <input id="stEmail" placeholder="student@example.com" autocomplete="email" />
+          <label for="stName">Name</label>
+          <input id="stName" placeholder="First name" autocomplete="name" />
+          <label for="stGrade">Grade</label>
+          <select id="stGrade">
+            <option value="">Select grade</option>
+            <option>Grade 4</option><option>Grade 5</option><option>Grade 6</option><option>Grade 7</option>
+            <option>Grade 8</option><option>Grade 9</option><option>Grade 10</option><option>Grade 11</option><option>Grade 12</option>
+          </select>
+
+          <div class="row" style="margin-top:10px;">
+            <button class="btn primary" onclick="signInStudent()">Continue</button>
+          </div>
+
+          <p class="fineprint" style="margin-top:10px;">
+            Mood notes and journal entries remain private to the student profile on this device.
+          </p>
+
+          <div class="divider"></div>
+          <p class="fineprint" style="margin:0;">
+            Student tools include mood check-ins, study planner + focus timer, sleep & wind-down routine, habit streaks + badges, calm toolkit, games, private journal, and eco-anxiety coping + action planning.
+          </p>
+        </div>
+
+        <div class="mini" id="schoolAuth" style="display:none;">
+          <div class="row" style="justify-content:space-between;">
+            <span class="badge">School login</span>
+            <button class="btn small ghost" onclick="autofill('school')">Auto-fill</button>
+          </div>
+          <label for="scEmail">School email</label>
+          <input id="scEmail" placeholder="wellbeing@school.ae" autocomplete="email" />
+          <div class="row" style="margin-top:10px;">
+            <button class="btn primary" onclick="signInSchool()">Continue</button>
+          </div>
+
+          <p class="fineprint" style="margin-top:10px;">
+            School view shows aggregated trends stored on this device only (no student identities, no notes).
+          </p>
+
+          <div class="divider"></div>
+          <p class="fineprint" style="margin:0;">
+            School insights can support planning (e.g., wellbeing sessions, study load coordination, sleep awareness weeks, and eco-anxiety education).
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- STUDENT APP -->
+    <section class="card hide" id="studentApp">
+      <div class="row" style="justify-content:space-between; align-items:flex-start;">
+        <div>
+          <h2 id="hello">Hi!</h2>
+          <p class="fineprint" id="helloSub">Welcome back.</p>
+          <div class="row" style="margin-top:8px; gap:8px;">
+            <span class="badge" id="topMood">Mood: –</span>
+            <span class="badge" id="topFocus">Focus: –</span>
+            <span class="badge" id="topSleep">Sleep: –</span>
+            <span class="badge" id="topBadges">Badges: 0</span>
+          </div>
+        </div>
+        <div class="orb" aria-hidden="true"></div>
+      </div>
+
+      <div class="tabs" style="margin-top:12px;">
+        <div class="tab active" data-view="dash" onclick="showStudentView('dash')">🏠 Dashboard</div>
+        <div class="tab" data-view="mood" onclick="showStudentView('mood')">🙂 Mood</div>
+        <div class="tab" data-view="study" onclick="showStudentView('study')">📚 Study</div>
+        <div class="tab" data-view="sleep" onclick="showStudentView('sleep')">🌙 Sleep</div>
+        <div class="tab" data-view="calm" onclick="showStudentView('calm')">🫧 Calm</div>
+        <div class="tab" data-view="eco" onclick="showStudentView('eco')">🌿 Eco-anxiety</div>
+        <div class="tab" data-view="game" onclick="showStudentView('game')">🎮 Games</div>
+        <div class="tab" data-view="journal" onclick="showStudentView('journal')">📓 Journal</div>
+        <div class="tab" data-view="insights" onclick="showStudentView('insights')">📈 Insights</div>
+        <div class="tab" data-view="help" onclick="showStudentView('help')">🆘 Help</div>
+      </div>
+
+      <!-- DASH -->
+      <section class="card hide" id="st-view-dash" style="margin-top:12px;">
+        <h2>Today at a glance</h2>
+        <p>Pick one small step and finish it. That’s enough.</p>
+
+        <div class="split" style="margin-top:12px;">
+          <div class="mini">
+            <h2 style="font-size:1rem; margin:0 0 6px;">Mood check-in</h2>
+            <p class="fineprint" style="margin:0;">Track feelings and get a coping suggestion.</p>
+            <div class="row" style="margin-top:10px;">
+              <button class="btn primary" onclick="showStudentView('mood')">Mood check</button>
+              <button class="btn ghost" onclick="quickAction('mood')">Quick save</button>
+            </div>
+          </div>
+          <div class="mini">
+            <h2 style="font-size:1rem; margin:0 0 6px;">Focus session</h2>
+            <p class="fineprint" style="margin:0;">Reduce stress with structured focus.</p>
+            <div class="row" style="margin-top:10px;">
+              <button class="btn primary" onclick="showStudentView('study')">Start focus</button>
+              <button class="btn ghost" onclick="quickAction('focus')">1-minute plan</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="split" style="margin-top:10px;">
+          <div class="mini">
+            <h2 style="font-size:1rem; margin:0 0 6px;">Sleep & energy</h2>
+            <p class="fineprint" style="margin:0;">Log sleep and get a simple tip.</p>
+            <div class="row" style="margin-top:10px;">
+              <button class="btn primary" onclick="showStudentView('sleep')">Log sleep</button>
+              <button class="btn ghost" onclick="quickAction('winddown')">Wind-down idea</button>
+            </div>
+          </div>
+          <div class="mini">
+            <h2 style="font-size:1rem; margin:0 0 6px;">Habit streaks</h2>
+            <p class="fineprint" style="margin:0;">Tiny habits → strong mind.</p>
+            <div class="chips" aria-label="Habits">
+              <button class="chip" id="hb-water" onclick="toggleHabit('water')">💧 Water</button>
+              <button class="chip" id="hb-move" onclick="toggleHabit('move')">🏃 Move</button>
+              <button class="chip" id="hb-kind" onclick="toggleHabit('kind')">💛 Kindness</button>
+            </div>
+            <p class="fineprint" style="margin:8px 0 0;">Streak points: <b id="habitPts">–</b></p>
+          </div>
+        </div>
+
+        <div class="split" style="margin-top:10px;">
+          <div class="mini">
+            <h2 style="font-size:1rem; margin:0 0 6px;">Eco calm actions</h2>
+            <p class="fineprint" style="margin:0;">Small climate actions can reduce helplessness. Pick one you can do this week.</p>
+            <div class="progress" style="margin-top:10px;"><div id="ecoDashProg"></div></div>
+            <p class="fineprint" style="margin:8px 0 0;">This week: <b id="ecoDashDone">0</b> actions done.</p>
+            <div class="row" style="margin-top:10px;">
+              <button class="btn primary" onclick="showStudentView('eco')">Open eco page</button>
+              <button class="btn ghost" onclick="ecoQuickOne()">Mark 1 action</button>
+            </div>
+          </div>
+          <div class="mini">
+            <h2 style="font-size:1rem; margin:0 0 6px;">Mood Garden</h2>
+            <p class="fineprint" style="margin:0;">Grow your plant by doing small helpful steps (no perfection).</p>
+            <div class="row" style="margin-top:10px; gap:12px;">
+              <div style="flex:1;">
+                <div class="progress"><div id="gardenProg"></div></div>
+                <p class="fineprint" style="margin:8px 0 0;">Growth: <b id="gardenPct">0%</b></p>
+                <div class="row" style="margin-top:10px;">
+                  <button class="btn primary" onclick="gardenBoost()">Boost 🌱</button>
+                  <button class="btn ghost" onclick="gardenReset()">Reset</button>
+                </div>
+              </div>
+              <div aria-hidden="true" style="width:140px; display:flex; align-items:center; justify-content:center;">
+                <svg id="gardenSvg" width="120" height="120" viewBox="0 0 120 120" fill="none">
+                  <path d="M20 92c10 8 70 8 80 0" stroke="rgba(15,23,42,.18)" stroke-width="10" stroke-linecap="round"/>
+                  <path id="stem" d="M60 86V60" stroke="rgba(52,211,153,.9)" stroke-width="7" stroke-linecap="round"/>
+                  <path id="leafL" d="M60 68c-18-2-22-14-22-14 16-3 24 8 22 14Z" fill="rgba(96,165,250,.65)"/>
+                  <path id="leafR" d="M60 68c18-2 22-14 22-14-16-3-24 8-22 14Z" fill="rgba(167,139,250,.55)"/>
+                  <circle id="bud" cx="60" cy="56" r="10" fill="rgba(251,191,36,.85)"/>
+                </svg>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- MOOD -->
+      <section class="card hide" id="st-view-mood" style="margin-top:12px;">
+        <h2>Mood check-in</h2>
+        <p>Pick what matches you right now. Notes are optional and private.</p>
+
+        <div class="split" style="margin-top:10px;">
+          <div>
+            <label for="moodPick">Mood</label>
+            <select id="moodPick">
+              <option value="">Choose</option>
+              <option value="Great">Great 😊</option>
+              <option value="Okay">Okay 🙂</option>
+              <option value="Stressed">Stressed 😟</option>
+              <option value="Sad">Sad 😔</option>
+              <option value="Angry">Angry 😠</option>
+              <option value="Anxious">Anxious 😣</option>
+              <option value="Tired">Tired 😴</option>
+              <option value="Lonely">Lonely 🫥</option>
+            </select>
+
+            <label for="mIntensity">Intensity (1–5)</label>
+            <input id="mIntensity" type="range" min="1" max="5" value="3" oninput="document.getElementById('mIntOut').textContent=this.value" />
+            <p class="fineprint" style="margin:6px 0 0;">Intensity: <b id="mIntOut">3</b>/5</p>
+
+            <label for="mCause">What’s causing it? (optional category)</label>
+            <select id="mCause">
+              <option value="">Choose</option>
+              <option>Exams / homework</option>
+              <option>Friendship / peer pressure</option>
+              <option>Family</option>
+              <option>Health / tired</option>
+              <option>Sports / activities</option>
+              <option>Online / social media</option>
+              <option>Eco / climate worries</option>
+              <option>Other</option>
+            </select>
+            <p class="fineprint" style="margin:6px 0 0;">Categories help show overall trends (without personal details).</p>
+          </div>
+
+          <div>
+            <label for="mNote">Optional note (private)</label>
+            <textarea id="mNote" placeholder="One sentence is enough."></textarea>
+
+            <div class="row" style="margin-top:10px;">
+              <button class="btn primary" onclick="saveMood()">Save mood</button>
+              <button class="btn ghost" onclick="showMoodSuggestion()">Suggestion</button>
+            </div>
+
+            <div class="pill-note" style="margin-top:10px;">
+              <b>Last:</b> <span id="mLast">–</span><br/>
+              <span id="mSuggestion" class="fineprint"></span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- STUDY -->
+      <section class="card hide" id="st-view-study" style="margin-top:12px;">
+        <h2>Study planner + Focus timer</h2>
+        <p>Add tasks and use the focus timer to stay calm and consistent.</p>
+
+        <div class="split" style="margin-top:10px;">
+          <div>
+            <label for="tSubject">Subject</label>
+            <input id="tSubject" placeholder="Math / English / Science…" />
+            <label for="tTask">Task</label>
+            <input id="tTask" placeholder="Finish worksheet Q1–10" />
+            <label for="tDue">Due date (optional)</label>
+            <input id="tDue" type="date" />
+            <div class="row" style="margin-top:10px;">
+              <button class="btn primary" onclick="addTask()">Add task</button>
+              <button class="btn ghost" onclick="clearDoneTasks()">Clear done</button>
+            </div>
+            <p class="fineprint" style="margin-top:10px;"><b id="taskCount">0</b> tasks</p>
+            <ul class="list" id="taskList"></ul>
+          </div>
+
+          <div>
+            <h2 style="font-size:1rem; margin:0 0 6px;">Focus timer</h2>
+            <p class="fineprint" style="margin:0;">Choose a mode and press start.</p>
+
+            <div class="chips" style="margin-top:10px;">
+              <button class="chip on" id="modeFocus" onclick="setTimerMode('focus')">Focus 25</button>
+              <button class="chip" id="modeBreak" onclick="setTimerMode('break')">Break 5</button>
+              <button class="chip" id="modeDeep" onclick="setTimerMode('deep')">Deep 45</button>
+            </div>
+
+            <div class="gamebox" style="margin-top:10px;">
+              <div class="row" style="justify-content:space-between;">
+                <div>
+                  <div class="big" id="timerDisplay" style="font-variant-numeric: tabular-nums;">25:00</div>
+                  <div class="fineprint">Mode: <b id="timerModeLabel">Focus</b></div>
+                </div>
+                <div class="badge" id="focusBadge">Focus points: <span id="focusPts">0</span></div>
+              </div>
+
+              <div class="row" style="margin-top:10px;">
+                <button class="btn primary" id="btnStartTimer" onclick="startTimer()">Start</button>
+                <button class="btn ghost" onclick="pauseTimer()">Pause</button>
+                <button class="btn ghost" onclick="resetTimer()">Reset</button>
+              </div>
+              <p class="fineprint" style="margin-top:10px;">
+                Tip: Start with just 10 minutes. Momentum matters more than perfect plans.
+              </p>
+            </div>
+
+            <div class="divider"></div>
+            <h2 style="font-size:1rem; margin:0 0 6px;">Study stress helper</h2>
+            <p class="fineprint" style="margin:0;">Pick one:</p>
+            <div class="chips">
+              <button class="chip" onclick="stressHelper('plan')">Plan</button>
+              <button class="chip" onclick="stressHelper('start')">Start</button>
+              <button class="chip" onclick="stressHelper('calm')">Calm</button>
+            </div>
+            <div class="pill-note" id="stressOut" style="margin-top:10px;">Choose an option above.</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- SLEEP -->
+      <section class="card hide" id="st-view-sleep" style="margin-top:12px;">
+        <h2>Sleep tracker</h2>
+        <p>Log sleep and build energy over time.</p>
+
+        <div class="split" style="margin-top:10px;">
+          <div>
+            <label for="sHours">Hours slept last night</label>
+            <input id="sHours" type="number" min="0" max="16" step="0.5" placeholder="e.g., 7.5" />
+            <label for="sQuality">Sleep quality</label>
+            <select id="sQuality">
+              <option value="">Choose</option>
+              <option>Great</option><option>Okay</option><option>Not good</option>
+            </select>
+            <div class="row" style="margin-top:10px;">
+              <button class="btn primary" onclick="saveSleep()">Save sleep</button>
+            </div>
+
+            <div class="pill-note" style="margin-top:10px;">
+              <b>Last:</b> <span id="sLast">–</span><br/>
+              <span id="sTip" class="fineprint"></span>
+            </div>
+          </div>
+
+          <div>
+            <h2 style="font-size:1rem; margin:0 0 6px;">Wind-down plan</h2>
+            <p class="fineprint" style="margin:0;">Pick one tiny routine for tonight.</p>
+            <ul style="margin:10px 0 0; color:var(--muted); line-height:1.7; font-weight:780;">
+              <li>Put phone away 20 minutes early</li>
+              <li>60-second breathing</li>
+              <li>Drink water (not too much late night)</li>
+              <li>Pack bag / plan tomorrow (2 minutes)</li>
+            </ul>
+            <div class="divider"></div>
+            <div class="row" style="justify-content:space-between;">
+              <span class="badge">Goal: <b id="sleepGoal">8</b>h</span>
+              <button class="btn small ghost" onclick="editSleepGoal()">Edit goal</button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- CALM -->
+      <section class="card hide" id="st-view-calm" style="margin-top:12px;">
+        <h2>Calm toolkit</h2>
+        <p>Quick tools for stress, anger, sadness, and overthinking.</p>
+
+        <div class="gamebox" style="margin-top:10px;">
+          <div class="row" style="justify-content:space-between; align-items:center;">
+            <div>
+              <div class="badge">Breathing guide</div>
+              <p class="fineprint" style="margin:8px 0 0;">Follow the rhythm: breathe in… hold… breathe out…</p>
+            </div>
+            <div class="orb" style="width:90px;height:90px;"></div>
+          </div>
+          <div class="row" style="margin-top:10px;">
+            <button class="btn small ghost" onclick="breathTimer(60)">60s</button>
+            <button class="btn small ghost" onclick="breathTimer(120)">2m</button>
+            <button class="btn small ghost" onclick="breathTimer(0)">Stop</button>
+            <span class="badge">Timer: <span id="breathStatus">Off</span></span>
+          </div>
+        </div>
+
+        <div class="divider"></div>
+
+        <h2 style="font-size:1rem; margin:0 0 6px;">Choose a tool</h2>
+        <div class="chips">
+          <button class="chip" onclick="setCalmTool('54321')">5-4-3-2-1</button>
+          <button class="chip" onclick="setCalmTool('box')">Box Breathing</button>
+          <button class="chip" onclick="setCalmTool('reset')">✨ Reset Thought</button>
+          <button class="chip" onclick="setCalmTool('body')">Body Scan</button>
+        </div>
+        <div class="pill-note" id="calmOut" style="margin-top:10px;">Pick a tool above.</div>
+
+        <div class="divider"></div>
+        <div class="row" style="justify-content:space-between;">
+          <span class="badge">“<span id="quote">You’ve got this.</span>”</span>
+          <button class="btn small ghost" onclick="newQuote()">New quote</button>
+        </div>
+      </section>
+
+      <!-- ECO -->
+      <section class="card hide" id="st-view-eco" style="margin-top:12px;">
+        <h2>Eco-anxiety</h2>
+        <p>Feeling worried about the environment is common. The goal here is not to “stop caring”, but to turn worry into balance + doable actions.</p>
+
+        <div class="split" style="margin-top:10px;">
+          <div>
+            <h2 style="font-size:1rem; margin:0 0 6px;">1) Name the feeling</h2>
+            <p class="fineprint" style="margin:0;">Pick what’s closest. This stays private.</p>
+            <div class="chips" style="margin-top:10px;">
+              <button class="chip" onclick="setEcoFeeling('overwhelmed')">Overwhelmed</button>
+              <button class="chip" onclick="setEcoFeeling('sad')">Sad</button>
+              <button class="chip" onclick="setEcoFeeling('angry')">Angry</button>
+              <button class="chip" onclick="setEcoFeeling('guilty')">Guilty</button>
+              <button class="chip" onclick="setEcoFeeling('motivated')">Motivated</button>
+            </div>
+            <div class="pill-note" id="ecoFeelingOut" style="margin-top:10px;">Feeling: <b id="ecoFeeling">–</b></div>
+
+            <div class="divider"></div>
+
+            <h2 style="font-size:1rem; margin:0 0 6px;">2) Helpful thoughts (60 seconds)</h2>
+            <div class="pill-note" id="ecoReframe">
+              “I can’t fix everything alone — but small consistent actions matter. I can focus on what I control, and ask for help when I need it.”
+            </div>
+            <div class="row" style="margin-top:10px;">
+              <button class="btn small ghost" onclick="ecoNewReframe()">New reframe</button>
+              <button class="btn small ghost" onclick="showStudentView('calm')">Use calm tool</button>
+            </div>
+          </div>
+
+          <div>
+            <h2 style="font-size:1rem; margin:0 0 6px;">3) Action list (doable this week)</h2>
+            <p class="fineprint" style="margin:0;">Mark what you did. This updates your dashboard + school totals (aggregated on this device).</p>
+
+            <ul class="list" id="ecoList" style="margin-top:10px;"></ul>
+
+            <div class="row" style="justify-content:space-between; margin-top:6px;">
+              <span class="badge">Done this week: <span id="ecoDone">0</span></span>
+              <button class="btn small ghost" onclick="ecoResetWeek()">Reset week</button>
+            </div>
+
+            <div class="divider"></div>
+            <h2 style="font-size:1rem; margin:0 0 6px;">If it feels heavy</h2>
+            <div class="pill-note">
+              Try the 3-step rule: <b>1</b> tiny action, <b>1</b> calm tool, <b>1</b> connection (talk to a friend/teacher/parent).
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- GAMES -->
+      <section class="card hide" id="st-view-game" style="margin-top:12px;">
+        <h2>Games</h2>
+        <p>Short, calming games for coping skills and confidence. These are for learning — not diagnosis.</p>
+
+        <div class="split" style="margin-top:10px;">
+          <div class="gamebox">
+            <div class="row" style="justify-content:space-between;">
+              <span class="badge">Emotion Quest (30 levels)</span>
+              <button class="btn small ghost" onclick="restartQuest()">Restart</button>
+            </div>
+            <p class="fineprint" style="margin:10px 0 0;">Choose the healthiest response in school-life scenarios.</p>
+            <div class="divider"></div>
+            <div class="row" style="justify-content:space-between;">
+              <div class="badge">Level <span id="qLevel">1</span></div>
+              <div class="badge">Score <span id="qScore">0</span></div>
+              <div class="badge">Streak <span id="qStreak">0</span></div>
+            </div>
+            <div class="pill-note" id="qScenario" style="margin-top:10px;">Loading…</div>
+            <div class="chips" id="qChoices" style="margin-top:10px;"></div>
+            <div class="pill-note" id="qFeedback" style="margin-top:10px;"> </div>
+          </div>
+
+          <div class="gamebox">
+            <div class="row" style="justify-content:space-between;">
+              <span class="badge">Calm Clicks (60s)</span>
+              <button class="btn small ghost" onclick="startCalmClicks()">Start</button>
+            </div>
+            <p class="fineprint" style="margin:10px 0 0;">Click the floating bubbles slowly (not fast). The goal is calm control.</p>
+            <div class="divider"></div>
+            <div class="row" style="justify-content:space-between;">
+              <div class="badge">Time: <span id="ccTime">–</span></div>
+              <div class="badge">Score: <span id="ccScore">0</span></div>
+              <div class="badge">Best: <span id="ccBest">0</span></div>
+            </div>
+            <div class="gamebox" id="ccArea" style="margin-top:10px; min-height:160px; background: rgba(255,255,255,.68);"></div>
+            <div class="pill-note" style="margin-top:10px;">
+              Tip: inhale… exhale… click… (slow rhythm). This trains regulation.
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- JOURNAL -->
+      <section class="card hide" id="st-view-journal" style="margin-top:12px;">
+        <h2>Journal</h2>
+        <p>Private space for thoughts. You can also add a gratitude line.</p>
+
+        <label for="jEntry">Journal entry (private)</label>
+        <textarea id="jEntry" placeholder="Write anything. Short is okay."></textarea>
+
+        <label for="jGrat">1 gratitude line (optional)</label>
+        <input id="jGrat" placeholder="One good thing today…" />
+
+        <div class="row" style="margin-top:10px;">
+          <button class="btn primary" onclick="saveJournal()">Save</button>
+          <button class="btn ghost" onclick="journalPrompt()">Prompt</button>
+          <span class="badge">Entries: <span id="jCount">0</span></span>
+        </div>
+
+        <div class="divider"></div>
+        <h2 style="font-size:1rem; margin:0 0 6px;">Recent entries</h2>
+        <ul class="list" id="jList"></ul>
+      </section>
+
+      <!-- INSIGHTS -->
+      <section class="card hide" id="st-view-insights" style="margin-top:12px;">
+        <h2>Insights</h2>
+        <p>Trends from your logs.</p>
+
+        <div class="split" style="margin-top:10px;">
+          <div class="mini">
+            <h2 style="font-size:1rem; margin:0 0 6px;">Mood trend (last 7 entries)</h2>
+            <canvas id="moodChart" width="500" height="240" style="width:100%; height:auto; border-radius:16px; border:1px solid var(--line); background:rgba(255,255,255,.9);"></canvas>
+            <p class="fineprint" id="moodTrendNote">Log moods to see a trend.</p>
+          </div>
+          <div class="mini">
+            <h2 style="font-size:1rem; margin:0 0 6px;">Sleep trend (last 7 entries)</h2>
+            <canvas id="sleepChart" width="500" height="240" style="width:100%; height:auto; border-radius:16px; border:1px solid var(--line); background:rgba(255,255,255,.9);"></canvas>
+            <p class="fineprint" id="sleepTrendNote">Log sleep to see a trend.</p>
+          </div>
+        </div>
+
+        <div class="divider"></div>
+        <div class="kpi">
+          <div class="k"><div class="big" id="pMood">0</div><div class="small">Mood logs</div></div>
+          <div class="k"><div class="big" id="pSleep">0</div><div class="small">Sleep logs</div></div>
+          <div class="k"><div class="big" id="pTasks">0</div><div class="small">Tasks done</div></div>
+        </div>
+        <div class="kpi" style="margin-top:10px;">
+          <div class="k"><div class="big" id="pHabits">0</div><div class="small">Habit points</div></div>
+          <div class="k"><div class="big" id="pEco">0</div><div class="small">Eco actions done (this week)</div></div>
+          <div class="k"><div class="big" id="pGame">0</div><div class="small">Emotion Quest score</div></div>
+        </div>
+      </section>
+
+      <!-- HELP -->
+      <section class="card hide" id="st-view-help" style="margin-top:12px;">
+        <h2>Help</h2>
+        <p>Tools, tips, and an AI-style coach for general guidance (no personal data sent anywhere).</p>
+
+        <div class="mini">
+          <h2 style="font-size:1rem; margin:0 0 6px;">Wellbeing coach (offline)</h2>
+          <p class="fineprint" style="margin:0;">Ask about stress, sleep, confidence, focus, friendships, anger, or eco-anxiety.</p>
+
+          <div class="row" style="margin-top:10px;">
+            <label class="sr-only" for="coachInput">Your question</label>
+            <input id="coachInput" placeholder="Type a question…" />
+            <button class="btn primary" onclick="coachSend()">Send</button>
+          </div>
+          <div class="pill-note" id="coachOut" style="margin-top:10px;"> </div>
+
+          <div class="safety" style="margin-top:10px;">
+            <b>Safety:</b> If you feel unsafe or think you might harm yourself, stop and tell a trusted adult immediately. If there is immediate danger, contact local emergency services.
+          </div>
+        </div>
+
+        <div class="divider"></div>
+
+        <h2 style="font-size:1rem; margin:0 0 6px;">Self-help quick tips</h2>
+        <ul style="margin:8px 0 0; color:var(--muted); line-height:1.7; font-weight:780;">
+          <li>Stress: 60 seconds breathing + one tiny task.</li>
+          <li>Anger: pause, 3 breaths, step away for 2 minutes.</li>
+          <li>Sad: talk to someone safe; do one gentle activity.</li>
+          <li>Overthinking: write worry → write a fair response.</li>
+          <li>Peer pressure: practise “No, I’m not comfortable.”</li>
+        </ul>
+
+        <div class="divider"></div>
+        <h2 style="font-size:1rem; margin:0 0 6px;">Resources library</h2>
+        <ul style="margin:8px 0 0; color:var(--muted); line-height:1.7; font-weight:780;">
+          <li>Understanding emotions (basic)</li>
+          <li>Exam stress plan (steps)</li>
+          <li>Healthy screen habits</li>
+          <li>Friendship skills</li>
+          <li>Better sleep routine</li>
+          <li>Eco-anxiety: turning worry into action</li>
+        </ul>
+
+        <div class="divider"></div>
+        <div class="row">
+          <button class="btn ghost" onclick="showStudentView('mood')">Quick action: Mood</button>
+          <button class="btn ghost" onclick="showStudentView('study')">Quick action: Focus</button>
+          <button class="btn ghost" onclick="showStudentView('calm')">Quick action: Calm</button>
+          <button class="btn ghost" onclick="showStudentView('eco')">Quick action: Eco</button>
+        </div>
+
+        <div class="divider"></div>
+        <div class="pill-note">
+          Privacy note: Student notes and journal content stay inside the student profile on this device. School insights are aggregated totals only — no names and no private text.
+        </div>
+      </section>
+    </section>
+
+    <!-- SCHOOL -->
+    <section class="card hide" id="schoolApp">
+      <div class="row" style="justify-content:space-between; align-items:center;">
+        <div>
+          <h2 id="schHello">School view</h2>
+          <p class="fineprint">Overall wellbeing insights (aggregated on this device only).</p>
+        </div>
+        <span class="badge">No individual monitoring</span>
+      </div>
+
+      <div class="tabs" style="margin-top:12px;">
+        <div class="tab active" data-view="dash" onclick="showSchoolView('dash')">📊 Insights</div>
+        <div class="tab" data-view="actions" onclick="showSchoolView('actions')">✅ Actions</div>
+      </div>
+
+      <section class="card hide" id="sc-view-dash" style="margin-top:12px;">
+        <h2>School insights</h2>
+        <p>Aggregated trends to support planning (on this device).</p>
+
+        <div class="kpi">
+          <div class="k"><div class="big" id="sKStudents">0</div><div class="small">Students on this device</div></div>
+          <div class="k"><div class="big" id="sKMoods">0</div><div class="small">Mood check-ins</div></div>
+          <div class="k"><div class="big" id="sKSleep">–</div><div class="small">Average sleep (latest 7 logs)</div></div>
+        </div>
+
+        <div class="kpi" style="margin-top:10px;">
+          <div class="k"><div class="big" id="sKEco">0</div><div class="small">Eco actions done (this week)</div></div>
+          <div class="k"><div class="big" id="sKFocus">0</div><div class="small">Total focus points</div></div>
+          <div class="k"><div class="big" id="sKHabits">0</div><div class="small">Total habit points</div></div>
+        </div>
+
+        <div class="split" style="margin-top:12px;">
+          <div class="mini">
+            <h2 style="font-size:1rem; margin:0 0 6px;">Mood distribution</h2>
+            <canvas id="schMoodChart" width="500" height="240" style="width:100%; height:auto; border-radius:16px; border:1px solid var(--line); background:rgba(255,255,255,.9);"></canvas>
+            <p class="fineprint" id="schMoodNote">No data yet.</p>
+          </div>
+
+          <div class="mini">
+            <h2 style="font-size:1rem; margin:0 0 6px;">Top mood causes (categories)</h2>
+            <ul class="list" id="schCauseList"></ul>
+          </div>
+        </div>
+
+        <div class="divider"></div>
+        <h2 style="font-size:1rem; margin:0 0 6px;">Eco actions (top)</h2>
+        <ul class="list" id="schEcoList"></ul>
+      </section>
+
+      <section class="card hide" id="sc-view-actions" style="margin-top:12px;">
+        <h2>Recommended actions</h2>
+        <p>Ideas based on overall trends.</p>
+        <ul style="margin:8px 0 0; color:var(--muted); line-height:1.7; font-weight:780;">
+          <li>If “Exams / homework” is high: coordinate assessment calendar; add study skills session.</li>
+          <li>If sleep average is low: run a “sleep & focus” awareness week.</li>
+          <li>If “Friendship” is high: peer support + anti-bullying activities + empathy game day.</li>
+          <li>Offer short breathing sessions at start of class (60 seconds).</li>
+          <li>Add eco-anxiety literacy: turn worry into action + hope (projects, clean-ups, gardening, sustainability week).</li>
+          <li>Build safe reporting pathways outside the app if needed.</li>
+        </ul>
+
+        <div class="divider"></div>
+        <div class="pill-note">
+          Note: This app is a wellbeing education pilot. It does not diagnose, assess risk clinically, or replace professional support.
+        </div>
+      </section>
+    </section>
+  </main>
+</div>
+
+<div class="toast" id="toast">Saved</div>
+
+<script>
+/* MindUrMind - privacy-first pilot (on-device) */
+/* Data model v2 stored in localStorage under KEY */
+const KEY = "mindurmind_v2";
+const $ = (id)=>document.getElementById(id);
+
+const DEFAULT = {
+  version: 2,
+  active: { role: null, email: null },
+  profiles: {},        // student profiles by email
+  school: { email: null },
+  ui: { sleepGoal: 8, lastRole: "student" },
+  game: { calmClicksBest: 0 }
+};
+
+let state = loadState();
+let timer = { mode:"focus", seconds:25*60, running:false, tick:null };
+let breath = { tick:null, left:0 };
+let calmClicks = { running:false, left:0, score:0, tick:null };
+let ecoFeelings = ["overwhelmed","sad","angry","guilty","motivated"];
+let ecoReframes = [
+  "I can’t fix everything alone — but small consistent actions matter. I’ll focus on what I control today.",
+  "Caring is a strength. I can take one doable step and also rest when I need to.",
+  "I can turn worry into learning: understand the issue, then choose one action with friends.",
+  "I can’t do everything — but I can do something, and that is meaningful.",
+  "When I feel stuck, I will connect: talk to a trusted adult or friend and choose one small action."
+];
+
+const ECO_ACTIONS = [
+  {id:"eco1", text:"Carry a reusable bottle today"},
+  {id:"eco2", text:"Switch off lights/fans when leaving a room"},
+  {id:"eco3", text:"Bring a reusable bag / avoid single-use plastic"},
+  {id:"eco4", text:"Pick up 5 pieces of litter (with gloves if needed)"},
+  {id:"eco5", text:"Save water: 2-minute shorter shower / tap off"},
+  {id:"eco6", text:"Learn one climate fact from a reliable source"},
+  {id:"eco7", text:"Talk to a friend about one hopeful action"},
+  {id:"eco8", text:"Help plant/maintain something green (home/school)"},
+];
+
+const QUOTES = [
+  "Your best is enough for today.",
+  "Small steps count.",
+  "Feelings are visitors — you can guide them.",
+  "Breathe. Then do the next right thing.",
+  "You can be kind to yourself and still grow."
+];
+
+const JOURNAL_PROMPTS = [
+  "What’s one small win from today?",
+  "What would I say to a friend feeling like me?",
+  "What’s one thing I can control right now?",
+  "What do I need: rest, help, or a plan?",
+  "Name the feeling. Name one next step."
+];
+
+/* Emotion Quest (30 levels) */
+const QUEST = buildQuest();
+
+function buildQuest(){
+  const q = [];
+  const base = [
+    {s:"You feel stressed before an exam.", a:[
+      ["Panic and scroll social media for 30 minutes", false, "Avoiding increases stress later."],
+      ["Take 60 seconds breathing, then pick 1 small topic to review", true, "Great: calm first, then micro-step."],
+      ["Skip the exam and pretend you’re sick", false, "Avoidance can make things harder."],
+    ]},
+    {s:"A friend ignores your message.", a:[
+      ["Assume they hate you and send 10 angry texts", false, "That escalates."],
+      ["Pause, then ask once: “Hey, are you okay?”", true, "Curious, calm, respectful."],
+      ["Post about them online", false, "Public conflict hurts both."],
+    ]},
+    {s:"You made a mistake in class and feel embarrassed.", a:[
+      ["Tell yourself you’re useless forever", false, "That’s an unfair thought."],
+      ["Say: “Mistakes are normal.” Then try again", true, "Growth mindset."],
+      ["Stop participating for the rest of the week", false, "Avoidance reduces confidence."],
+    ]},
+    {s:"You feel eco-anxious after seeing bad news.", a:[
+      ["Doomscroll for an hour", false, "Too much exposure can increase anxiety."],
+      ["Do one small action + take a break from news", true, "Action + balance helps."],
+      ["Decide nothing matters", false, "Hopelessness isn’t true or helpful."],
+    ]},
+  ];
+  for(let i=0;i<30;i++){
+    const b = base[i % base.length];
+    q.push({
+      level: i+1,
+      scenario: b.s,
+      answers: shuffle([...b.a]).map(([t,good,why])=>({text:t, good, why}))
+    });
+  }
+  return q;
+}
+
+/* ---------- storage ---------- */
+function loadState(){
+  try{
+    const raw = localStorage.getItem(KEY);
+    if(!raw) return structuredClone(DEFAULT);
+    const obj = JSON.parse(raw);
+    // merge defaults shallowly
+    return {
+      ...structuredClone(DEFAULT),
+      ...obj,
+      active: { ...structuredClone(DEFAULT.active), ...(obj.active||{}) },
+      ui: { ...structuredClone(DEFAULT.ui), ...(obj.ui||{}) },
+      game: { ...structuredClone(DEFAULT.game), ...(obj.game||{}) }
+    };
+  }catch(e){
+    console.warn("loadState failed", e);
+    return structuredClone(DEFAULT);
+  }
+}
+function saveState(){
+  localStorage.setItem(KEY, JSON.stringify(state));
+}
+function structuredClone(x){ return JSON.parse(JSON.stringify(x)); }
+function toast(msg){
+  const t = $("toast");
+  t.textContent = msg;
+  t.classList.add("on");
+  setTimeout(()=>t.classList.remove("on"), 1600);
+}
+
+/* ---------- auth + routing ---------- */
+let currentRole = state.ui.lastRole || "student";
+function setRole(role){
+  currentRole = role;
+  state.ui.lastRole = role;
+  saveState();
+  document.querySelectorAll("#auth .tab").forEach(el=>{
+    el.classList.toggle("active", el.dataset.role === role);
+  });
+  $("studentAuth").style.display = role === "student" ? "" : "none";
+  $("schoolAuth").style.display = role === "school" ? "" : "none";
+}
+
+function setSignedInUI(on, label){
+  $("btnSignOut").disabled = !on;
+  $("statusPill").textContent = on ? label : "Signed out";
+}
+
+function signInStudent(){
+  const email = ($("stEmail").value||"").trim().toLowerCase();
+  const name = ($("stName").value||"").trim();
+  const grade = ($("stGrade").value||"").trim();
+  if(!email || !email.includes("@")) return toast("Enter a valid student email");
+  if(!name) return toast("Enter your name");
+  if(!grade) return toast("Select a grade");
+
+  if(!state.profiles[email]){
+    state.profiles[email] = {
+      email, name, grade,
+      created: Date.now(),
+      moodLogs: [],
+      sleepLogs: [],
+      tasks: [],
+      habits: { water:{streak:0,last:0}, move:{streak:0,last:0}, kind:{streak:0,last:0}, points:0 },
+      journal: [],
+      eco: { weekId: currentWeekId(), feeling:null, actions:{} },
+      focus: { points:0 },
+      quest: { level:1, score:0, streak:0 },
+      garden: { pct: 0 }
+    };
+  }else{
+    // update name/grade in case it changed
+    state.profiles[email].name = name;
+    state.profiles[email].grade = grade;
+  }
+
+  state.active = { role:"student", email };
+  saveState();
+  boot();
+  toast("Welcome back");
+}
+
+function signInSchool(){
+  const email = ($("scEmail").value||"").trim().toLowerCase();
+  if(!email || !email.includes("@")) return toast("Enter a valid school email");
+  state.school.email = email;
+  state.active = { role:"school", email };
+  saveState();
+  boot();
+  toast("School view ready");
+}
+
+function signOut(){
+  state.active = { role:null, email:null };
+  saveState();
+  stopTimer();
+  stopBreath();
+  stopCalmClicks();
+  boot();
+  toast("Signed out");
+}
+
+function autofill(which){
+  if(which==="student"){
+    $("stEmail").value = "student"+Math.floor(Math.random()*90+10)+"@example.com";
+    $("stName").value = ["Aanya","Ravi","Sara","Omar","Diya","Zain"][Math.floor(Math.random()*6)];
+    $("stGrade").value = "Grade "+(Math.floor(Math.random()*8)+5);
+  }else{
+    $("scEmail").value = "wellbeing@school.ae";
+  }
+  toast("Auto-filled");
+}
+
+/* ---------- boot ---------- */
+function boot(){
+  // auth visibility
+  const signedIn = !!state.active.role;
+  $("auth").classList.toggle("hide", signedIn);
+  $("studentApp").classList.toggle("hide", !(signedIn && state.active.role==="student"));
+  $("schoolApp").classList.toggle("hide", !(signedIn && state.active.role==="school"));
+
+  if(!signedIn){
+    setSignedInUI(false);
+    setRole(state.ui.lastRole || "student");
+    return;
+  }
+
+  if(state.active.role==="student"){
+    const p = getProfile();
+    setSignedInUI(true, "Student • "+p.name+" • "+p.grade);
+    // student header badges
+    $("hello").textContent = "Hi, "+p.name+"!";
+    $("helloSub").textContent = "Welcome back. Pick one small step.";
+    refreshStudentTop();
+    // default view
+    showStudentView("dash");
+    // lists
+    renderTasks();
+    renderJournal();
+    renderEco();
+    // charts
+    drawStudentCharts();
+    // game
+    renderQuest();
+    // calm clicks best
+    $("ccBest").textContent = state.game.calmClicksBest || 0;
+  }else{
+    setSignedInUI(true, "School • "+(state.school.email||state.active.email));
+    showSchoolView("dash");
+    drawSchoolCharts();
+    renderSchoolLists();
+  }
+}
+boot();
+
+/* ---------- helpers ---------- */
+function getProfile(){
+  const email = state.active.email;
+  const p = state.profiles[email];
+  if(!p) throw new Error("Missing profile");
+  // week roll-over
+  const w = currentWeekId();
+  if(p.eco.weekId !== w){
+    p.eco.weekId = w;
+    p.eco.actions = {};
+  }
+  return p;
+}
+function nowDateLabel(ts=Date.now()){
+  const d = new Date(ts);
+  return d.toLocaleString(undefined, {weekday:"short", month:"short", day:"numeric", hour:"2-digit", minute:"2-digit"});
+}
+function clamp(n,min,max){ return Math.max(min, Math.min(max,n)); }
+function currentWeekId(){
+  const d = new Date();
+  // ISO-ish week key: yyyy-Www using simple method (Monday as first day)
+  const date = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
+  const dayNum = date.getUTCDay() || 7;
+  date.setUTCDate(date.getUTCDate() + 4 - dayNum);
+  const yearStart = new Date(Date.UTC(date.getUTCFullYear(),0,1));
+  const weekNo = Math.ceil((((date - yearStart) / 86400000) + 1) / 7);
+  return date.getUTCFullYear()+"-W"+String(weekNo).padStart(2,"0");
+}
+function shuffle(arr){
+  for(let i=arr.length-1;i>0;i--){
+    const j=Math.floor(Math.random()*(i+1));
+    [arr[i],arr[j]]=[arr[j],arr[i]];
+  }
+  return arr;
+}
+
+/* ---------- student view ---------- */
+function showStudentView(view){
+  document.querySelectorAll("#studentApp .tab").forEach(el=>{
+    el.classList.toggle("active", el.dataset.view === view);
+  });
+  const ids = ["dash","mood","study","sleep","calm","eco","game","journal","insights","help"];
+  ids.forEach(v=> $("st-view-"+v).classList.toggle("hide", v !== view));
+
+  // quick refresh when switching
+  if(view==="dash"){ refreshStudentTop(); refreshEcoDashboard(); refreshGardenUI(); }
+  if(view==="study"){ renderTasks(); }
+  if(view==="journal"){ renderJournal(); }
+  if(view==="eco"){ renderEco(); }
+  if(view==="insights"){ drawStudentCharts(); refreshStudentProgress(); }
+  if(view==="game"){ renderQuest(); }
+}
+
+function refreshStudentTop(){
+  const p = getProfile();
+  const lastMood = p.moodLogs.at(-1);
+  const lastSleep = p.sleepLogs.at(-1);
+  $("topMood").textContent = "Mood: " + (lastMood ? lastMood.mood : "–");
+  $("topFocus").textContent = "Focus: " + (p.focus.points || 0);
+  $("topSleep").textContent = "Sleep: " + (lastSleep ? (lastSleep.hours+"h") : "–");
+  $("topBadges").textContent = "Badges: " + calcBadges(p).length;
+  refreshEcoDashboard();
+  refreshGardenUI();
+  refreshStudentProgress();
+}
+
+function refreshStudentProgress(){
+  const p = getProfile();
+  $("pMood").textContent = p.moodLogs.length;
+  $("pSleep").textContent = p.sleepLogs.length;
+  $("pTasks").textContent = p.tasks.filter(t=>t.done).length;
+  $("pHabits").textContent = p.habits.points || 0;
+  $("pEco").textContent = Object.keys(p.eco.actions||{}).length;
+  $("pGame").textContent = p.quest.score || 0;
+}
+
+function calcBadges(p){
+  const b = [];
+  if(p.moodLogs.length >= 3) b.push("Mood Starter");
+  if(p.sleepLogs.length >= 3) b.push("Sleep Tracker");
+  if((p.focus.points||0) >= 50) b.push("Focus Builder");
+  if((p.habits.points||0) >= 20) b.push("Habit Hero");
+  if(Object.keys(p.eco.actions||{}).length >= 3) b.push("Eco Helper");
+  if((p.quest.score||0) >= 10) b.push("Coping Learner");
+  return b;
+}
+
+/* ---------- quick actions ---------- */
+function quickAction(kind){
+  if(state.active.role!=="student") return;
+  if(kind==="mood"){
+    // quick mood: okay, intensity 3
+    $("moodPick").value = "Okay";
+    $("mIntensity").value = 3; $("mIntOut").textContent = "3";
+    $("mCause").value = "";
+    $("mNote").value = "";
+    saveMood();
+  }else if(kind==="focus"){
+    // quick 1-minute plan
+    $("stressOut").textContent = "Pick ONE task, set a 10 minute timer, start with the easiest first step.";
+    toast("Micro-plan ready");
+  }else if(kind==="winddown"){
+    $("sTip").textContent = "Tonight: phone away 20 minutes early + 60 seconds breathing.";
+    toast("Wind-down idea set");
+  }
+}
+
+/* ---------- mood ---------- */
+function saveMood(){
+  const p = getProfile();
+  const mood = $("moodPick").value;
+  if(!mood) return toast("Choose a mood");
+  const intensity = Number($("mIntensity").value || 3);
+  const cause = $("mCause").value || "";
+  const note = ($("mNote").value||"").trim();
+
+  p.moodLogs.push({ mood, intensity, cause, note, ts: Date.now() });
+  if(p.moodLogs.length > 50) p.moodLogs.shift();
+  saveState();
+
+  $("mLast").textContent = mood + " ("+intensity+"/5) • " + nowDateLabel();
+  $("mSuggestion").textContent = moodSuggestion(mood, intensity, cause);
+  toast("Mood saved");
+  refreshStudentTop();
+  drawStudentCharts();
+  drawSchoolCharts();
+  renderSchoolLists();
+}
+
+function moodSuggestion(mood, intensity, cause){
+  const base = {
+    "Great":"Keep it simple: do one good habit and protect sleep.",
+    "Okay":"Choose one small goal and finish it. Momentum beats perfection.",
+    "Stressed":"60 seconds breathing, then pick one tiny step.",
+    "Sad":"Talk to someone safe + do one gentle activity (walk, music, shower).",
+    "Angry":"Pause, breathe 3 times, step away for 2 minutes.",
+    "Anxious":"Name 3 facts you know, then one small action you can control.",
+    "Tired":"Drink water, stretch, and protect bedtime tonight.",
+    "Lonely":"Send one kind message or join one small activity."
+  }[mood] || "Take one small step.";
+  const extra = intensity >= 4 ? " Keep it extra small today." : "";
+  const tag = cause ? (" Cause: "+cause+".") : "";
+  return base + extra + tag;
+}
+function showMoodSuggestion(){
+  const mood = $("moodPick").value || "Okay";
+  const intensity = Number($("mIntensity").value || 3);
+  const cause = $("mCause").value || "";
+  $("mSuggestion").textContent = moodSuggestion(mood, intensity, cause);
+  toast("Suggestion shown");
+}
+
+/* ---------- habits ---------- */
+function sameDay(a,b){
+  const da=new Date(a), db=new Date(b);
+  return da.getFullYear()===db.getFullYear() && da.getMonth()===db.getMonth() && da.getDate()===db.getDate();
+}
+function toggleHabit(kind){
+  const p = getProfile();
+  const h = p.habits[kind];
+  const now = Date.now();
+  if(h.last && sameDay(h.last, now)){
+    // undo today
+    h.last = 0;
+    // decrease streak carefully (can't know previous days, so just reduce by 1 if >0)
+    h.streak = Math.max(0, h.streak-1);
+    p.habits.points = Math.max(0, (p.habits.points||0) - 1);
+    toast("Habit undone");
+  }else{
+    // mark today
+    // if last was yesterday, streak+1 else reset to 1
+    const yesterday = new Date(); yesterday.setDate(yesterday.getDate()-1);
+    if(h.last && sameDay(h.last, yesterday.getTime())) h.streak += 1;
+    else h.streak = Math.max(1, h.streak);
+    h.last = now;
+    p.habits.points = (p.habits.points||0) + 1;
+    toast("Nice! Habit done");
+    sparkAt($("st-view-dash"), 0.7);
+  }
+  saveState();
+  refreshHabitsUI();
+  refreshStudentTop();
+  drawSchoolCharts();
+  renderSchoolLists();
+}
+
+function refreshHabitsUI(){
+  const p = getProfile();
+  ["water","move","kind"].forEach(k=>{
+    const el = $("hb-"+k);
+    const last = p.habits[k].last;
+    el.classList.toggle("on", !!last && sameDay(last, Date.now()));
+  });
+  $("habitPts").textContent = p.habits.points ?? 0;
+}
+function sparkAt(container, intensity=1){
+  // small sparkles to reward action
+  if(!container) return;
+  const rect = container.getBoundingClientRect();
+  const count = Math.round(8*intensity);
+  for(let i=0;i<count;i++){
+    const s = document.createElement("div");
+    s.className = "spark";
+    s.style.left = (Math.random()*rect.width)+"px";
+    s.style.top = (Math.random()*80)+"px";
+    s.style.opacity = "0.9";
+    s.style.transform = "scale("+(Math.random()*1.3+0.6)+")";
+    s.style.background = ["rgba(251,191,36,.9)","rgba(96,165,250,.9)","rgba(52,211,153,.85)","rgba(167,139,250,.85)"][Math.floor(Math.random()*4)];
+    container.appendChild(s);
+    s.animate([
+      { transform:"translateY(0) scale(1)", opacity:0.9 },
+      { transform:"translateY(-40px) scale(0.7)", opacity:0.0 }
+    ], { duration: 700 + Math.random()*400, easing:"cubic-bezier(.2,.7,.2,1)"});
+    setTimeout(()=>s.remove(), 1200);
+  }
+}
+
+/* ---------- tasks ---------- */
+function addTask(){
+  const p = getProfile();
+  const subject = ($("tSubject").value||"").trim();
+  const task = ($("tTask").value||"").trim();
+  const due = $("tDue").value || "";
+  if(!subject || !task) return toast("Add subject + task");
+  p.tasks.unshift({ id: cryptoRandom(), subject, task, due, done:false, ts: Date.now() });
+  if(p.tasks.length > 80) p.tasks.pop();
+  $("tTask").value = "";
+  saveState();
+  renderTasks();
+  refreshStudentTop();
+  toast("Task added");
+}
+function toggleTask(id){
+  const p = getProfile();
+  const t = p.tasks.find(x=>x.id===id);
+  if(!t) return;
+  t.done = !t.done;
+  saveState();
+  renderTasks();
+  refreshStudentTop();
+  drawSchoolCharts();
+  renderSchoolLists();
+  if(t.done){ sparkAt($("st-view-study"), 0.5); }
+}
+function clearDoneTasks(){
+  const p = getProfile();
+  p.tasks = p.tasks.filter(t=>!t.done);
+  saveState();
+  renderTasks();
+  refreshStudentTop();
+  toast("Cleared");
+}
+function renderTasks(){
+  const p = getProfile();
+  $("taskCount").textContent = p.tasks.length;
+  const ul = $("taskList");
+  ul.innerHTML = "";
+  p.tasks.slice(0,20).forEach(t=>{
+    const li = document.createElement("li");
+    li.innerHTML = \`
+      <div style="min-width:0;">
+        <div style="font-weight:900;">\${escapeHtml(t.subject)} • \${escapeHtml(t.task)}</div>
+        <div class="fineprint">\${t.due ? ("Due: "+t.due+" • ") : ""}\${new Date(t.ts).toLocaleDateString()}</div>
+      </div>
+      <button class="btn small \${t.done ? "primary" : "ghost"}" onclick="toggleTask('\${t.id}')">\${t.done ? "Done ✓" : "Mark done"}</button>
+    \`;
+    ul.appendChild(li);
+  });
+}
+
+/* ---------- focus timer ---------- */
+function setTimerMode(mode){
+  timer.mode = mode;
+  const map = { focus:25*60, break:5*60, deep:45*60 };
+  timer.seconds = map[mode] || 25*60;
+  updateTimerUI();
+  ["focus","break","deep"].forEach(m=>{
+    $("mode"+capitalize(m)).classList.toggle("on", m===mode);
+  });
+  // chips selection
+  $("modeFocus").classList.toggle("on", mode==="focus");
+  $("modeBreak").classList.toggle("on", mode==="break");
+  $("modeDeep").classList.toggle("on", mode==="deep");
+}
+function startTimer(){
+  if(timer.running) return;
+  timer.running = true;
+  $("btnStartTimer").textContent = "Running…";
+  timer.tick = setInterval(()=>{
+    timer.seconds = Math.max(0, timer.seconds - 1);
+    updateTimerUI();
+    if(timer.seconds === 0){
+      stopTimer();
+      onTimerComplete();
+    }
+  }, 1000);
+}
+function pauseTimer(){
+  stopTimer(false);
+  toast("Paused");
+}
+function resetTimer(){
+  stopTimer(false);
+  setTimerMode(timer.mode);
+  toast("Reset");
+}
+function stopTimer(showToast=true){
+  if(timer.tick) clearInterval(timer.tick);
+  timer.tick = null;
+  timer.running = false;
+  $("btnStartTimer") && ($("btnStartTimer").textContent = "Start");
+  if(showToast) toast("Stopped");
+}
+function updateTimerUI(){
+  const mm = Math.floor(timer.seconds/60);
+  const ss = timer.seconds%60;
+  $("timerDisplay").textContent = String(mm).padStart(2,"0")+":"+String(ss).padStart(2,"0");
+  $("timerModeLabel").textContent = ({focus:"Focus",break:"Break",deep:"Deep"}[timer.mode] || "Focus");
+  if(state.active.role==="student"){
+    const p = getProfile();
+    $("focusPts").textContent = p.focus.points || 0;
+  }
+}
+function onTimerComplete(){
+  if(state.active.role!=="student") return;
+  const p = getProfile();
+  const add = timer.mode==="break" ? 1 : (timer.mode==="deep" ? 5 : 3);
+  p.focus.points = (p.focus.points||0) + add;
+  saveState();
+  updateTimerUI();
+  refreshStudentTop();
+  drawSchoolCharts();
+  renderSchoolLists();
+  toast("Nice work! +"+add+" focus points");
+  sparkAt($("st-view-study"), 0.9);
+}
+
+/* ---------- stress helper ---------- */
+function stressHelper(which){
+  const out = {
+    plan:"Write the next 3 steps. Make step 1 only 2 minutes.",
+    start:"Start badly for 2 minutes. The goal is to begin, not to be perfect.",
+    calm:"60 seconds breathing. Then choose the easiest first step."
+  }[which] || "Choose one.";
+  $("stressOut").textContent = out;
+  toast("Helper set");
+}
+
+/* ---------- sleep ---------- */
+function saveSleep(){
+  const p = getProfile();
+  const hours = Number($("sHours").value);
+  const quality = $("sQuality").value;
+  if(!hours || hours<0 || hours>16) return toast("Enter hours 0–16");
+  if(!quality) return toast("Choose sleep quality");
+  p.sleepLogs.push({ hours, quality, ts: Date.now() });
+  if(p.sleepLogs.length > 50) p.sleepLogs.shift();
+  saveState();
+  $("sLast").textContent = hours+"h • "+quality+" • "+nowDateLabel();
+  $("sTip").textContent = sleepTip(hours, quality);
+  toast("Sleep saved");
+  refreshStudentTop();
+  drawStudentCharts();
+  drawSchoolCharts();
+}
+function sleepTip(hours, quality){
+  if(hours < 6) return "Try: earlier screen-off + consistent bedtime. Even +30 minutes helps.";
+  if(hours < state.ui.sleepGoal) return "Close to goal. Aim for same sleep time tonight.";
+  return "Nice. Protect this routine — it supports mood + focus.";
+}
+function editSleepGoal(){
+  const g = prompt("Sleep goal hours (e.g., 8):", String(state.ui.sleepGoal || 8));
+  if(g===null) return;
+  const v = clamp(Number(g), 6, 10);
+  state.ui.sleepGoal = v;
+  saveState();
+  $("sleepGoal").textContent = v;
+  toast("Goal updated");
+}
+
+/* ---------- calm tools ---------- */
+function setCalmTool(tool){
+  const text = {
+    "54321":"Name: 5 things you see, 4 you feel, 3 you hear, 2 you smell, 1 you taste. Slow breaths.",
+    "box":"Breathe in 4 • hold 4 • out 4 • hold 4. Repeat 4 times.",
+    "reset":"Write the worry. Then write a fair, kind response. Choose one small action.",
+    "body":"Scan head → shoulders → chest → hands → legs. Soften each area for 3 breaths."
+  }[tool] || "Pick a tool.";
+  $("calmOut").textContent = text;
+  toast("Tool ready");
+}
+function newQuote(){
+  $("quote").textContent = QUOTES[Math.floor(Math.random()*QUOTES.length)];
+  toast("New quote");
+}
+
+function breathTimer(seconds){
+  stopBreath();
+  if(seconds<=0){
+    $("breathStatus").textContent = "Off";
+    return;
+  }
+  breath.left = seconds;
+  $("breathStatus").textContent = seconds+"s";
+  breath.tick = setInterval(()=>{
+    breath.left -= 1;
+    $("breathStatus").textContent = breath.left+"s";
+    if(breath.left<=0){
+      stopBreath();
+      $("breathStatus").textContent = "Done";
+      toast("Breathing done");
+    }
+  }, 1000);
+}
+function stopBreath(){
+  if(breath.tick) clearInterval(breath.tick);
+  breath.tick = null;
+}
+
+/* ---------- eco ---------- */
+function renderEco(){
+  const p = getProfile();
+  // week rollover handled in getProfile
+  $("ecoFeeling").textContent = p.eco.feeling || "–";
+  const ul = $("ecoList");
+  ul.innerHTML = "";
+  ECO_ACTIONS.forEach(a=>{
+    const doneTs = p.eco.actions[a.id] || 0;
+    const li = document.createElement("li");
+    li.innerHTML = \`
+      <div style="min-width:0;">
+        <div style="font-weight:900;">\${escapeHtml(a.text)}</div>
+        <div class="fineprint">\${doneTs ? ("Done • "+new Date(doneTs).toLocaleDateString()) : "Not done yet"}</div>
+      </div>
+      <button class="btn small \${doneTs ? "primary" : "ghost"}" onclick="toggleEcoAction('\${a.id}')">\${doneTs ? "Done ✓" : "Mark done"}</button>
+    \`;
+    ul.appendChild(li);
+  });
+  $("ecoDone").textContent = Object.keys(p.eco.actions||{}).length;
+  refreshEcoDashboard();
+}
+function setEcoFeeling(feel){
+  const p = getProfile();
+  p.eco.feeling = feel;
+  saveState();
+  $("ecoFeeling").textContent = feel;
+  toast("Saved feeling");
+  // also add as mood cause category to school aggregation via mood logs (not necessary)
+}
+function ecoNewReframe(){
+  $("ecoReframe").textContent = ecoReframes[Math.floor(Math.random()*ecoReframes.length)];
+  toast("New reframe");
+}
+function toggleEcoAction(id){
+  const p = getProfile();
+  if(p.eco.weekId !== currentWeekId()){
+    p.eco.weekId = currentWeekId();
+    p.eco.actions = {};
+  }
+  if(p.eco.actions[id]){
+    delete p.eco.actions[id];
+    toast("Undone");
+  }else{
+    p.eco.actions[id] = Date.now();
+    toast("Action done 🌿");
+    sparkAt($("st-view-eco"), 0.8);
+  }
+  // small reward in garden
+  p.garden.pct = clamp((p.garden.pct||0) + (p.eco.actions[id]? 4 : -4), 0, 100);
+  saveState();
+  renderEco();
+  refreshStudentTop();
+  drawSchoolCharts();
+  renderSchoolLists();
+}
+function ecoResetWeek(){
+  const p = getProfile();
+  p.eco.weekId = currentWeekId();
+  p.eco.actions = {};
+  saveState();
+  renderEco();
+  toast("Week reset");
+  drawSchoolCharts();
+  renderSchoolLists();
+}
+function ecoQuickOne(){
+  // mark random undone action
+  const p = getProfile();
+  const undone = ECO_ACTIONS.filter(a=>!p.eco.actions[a.id]);
+  if(!undone.length) return toast("All actions done 🎉");
+  toggleEcoAction(undone[Math.floor(Math.random()*undone.length)].id);
+}
+function refreshEcoDashboard(){
+  if(state.active.role!=="student") return;
+  const p = getProfile();
+  const done = Object.keys(p.eco.actions||{}).length;
+  $("ecoDashDone").textContent = done;
+  const pct = Math.round((done / ECO_ACTIONS.length)*100);
+  $("ecoDashProg").style.width = pct+"%";
+  $("pEco").textContent = done;
+}
+
+/* ---------- garden ---------- */
+function refreshGardenUI(){
+  if(state.active.role!=="student") return;
+  const p = getProfile();
+  const pct = clamp(Number(p.garden.pct||0), 0, 100);
+  $("gardenPct").textContent = pct+"%";
+  $("gardenProg").style.width = pct+"%";
+  // adjust plant parts
+  $("stem").setAttribute("d", pct<30 ? "M60 86V74" : (pct<60 ? "M60 86V66" : "M60 86V58"));
+  $("bud").setAttribute("r", pct<60 ? 8 : 11);
+  $("leafL").style.opacity = pct<20 ? 0.25 : 1;
+  $("leafR").style.opacity = pct<20 ? 0.25 : 1;
+}
+function gardenBoost(){
+  const p = getProfile();
+  p.garden.pct = clamp((p.garden.pct||0) + 6, 0, 100);
+  saveState();
+  refreshGardenUI();
+  toast("Boosted 🌱");
+  sparkAt($("st-view-dash"), 0.7);
+}
+function gardenReset(){
+  const p = getProfile();
+  p.garden.pct = 0;
+  saveState();
+  refreshGardenUI();
+  toast("Reset");
+}
+
+/* ---------- journal ---------- */
+function saveJournal(){
+  const p = getProfile();
+  const entry = ($("jEntry").value||"").trim();
+  const grat = ($("jGrat").value||"").trim();
+  if(!entry && !grat) return toast("Write something (even 1 line)");
+  p.journal.unshift({ entry, grat, ts: Date.now() });
+  if(p.journal.length>60) p.journal.pop();
+  $("jEntry").value=""; $("jGrat").value="";
+  saveState();
+  renderJournal();
+  refreshStudentTop();
+  toast("Saved");
+}
+function journalPrompt(){
+  $("jEntry").value = JOURNAL_PROMPTS[Math.floor(Math.random()*JOURNAL_PROMPTS.length)];
+  $("jEntry").focus();
+  toast("Prompt added");
+}
+function renderJournal(){
+  const p = getProfile();
+  $("jCount").textContent = p.journal.length;
+  const ul = $("jList");
+  ul.innerHTML = "";
+  p.journal.slice(0,10).forEach(j=>{
+    const li = document.createElement("li");
+    li.innerHTML = \`
+      <div style="min-width:0;">
+        <div style="font-weight:900;">\${new Date(j.ts).toLocaleDateString()}</div>
+        <div class="fineprint">\${escapeHtml((j.entry||"").slice(0,160) || "(no text)")}</div>
+        \${j.grat ? \`<div class="fineprint">Gratitude: <b>\${escapeHtml(j.grat)}</b></div>\` : ""}
+      </div>
+    \`;
+    ul.appendChild(li);
+  });
+}
+
+/* ---------- coach (offline rules-based) ---------- */
+function coachSend(){
+  const q = ($("coachInput").value||"").trim();
+  if(!q) return toast("Type a question");
+  $("coachInput").value="";
+  const a = coachAnswer(q);
+  $("coachOut").textContent = a;
+  toast("Coach replied");
+}
+function coachAnswer(q){
+  const t = q.toLowerCase();
+  const say = (x)=>x;
+  if(t.includes("sleep")) return say("Try a 2-step plan: 1) screen-off 20 minutes earlier, 2) same bedtime for 3 days. If worry keeps you awake, write it down then write one small plan.");
+  if(t.includes("stress") || t.includes("exam")) return say("Stress tip: do 60 seconds breathing, then choose ONE tiny task (2 minutes). Starting reduces stress more than thinking.");
+  if(t.includes("friend") || t.includes("bully") || t.includes("peer")) return say("Friendship tip: ask once calmly, set a boundary, and talk to a trusted adult if it’s repeated or unsafe. You deserve respectful friendships.");
+  if(t.includes("anger")) return say("Anger tip: pause, breathe 3 times, step away for 2 minutes. Then choose words that are firm but not hurtful.");
+  if(t.includes("anxiety") || t.includes("anxious")) return say("Anxiety tip: name 3 facts you know right now, then choose one action you control. If it’s too big, shrink it to a 2-minute step.");
+  if(t.includes("eco") || t.includes("climate") || t.includes("environment")) return say("Eco-anxiety tip: balance information + action. Limit doomscrolling, do one small action, and connect with others (clubs, projects). Caring is a strength.");
+  if(t.includes("focus") || t.includes("study")) return say("Focus tip: set a 10–25 minute timer, start with the easiest step, and stop when it ends. Consistency beats long sessions.");
+  return "Try this: 1) Name the feeling, 2) calm for 60 seconds, 3) choose one small helpful action. If you feel unsafe, tell a trusted adult immediately.";
+}
+
+/* ---------- Emotion Quest ---------- */
+function renderQuest(){
+  if(state.active.role!=="student") return;
+  const p = getProfile();
+  const level = clamp(p.quest.level || 1, 1, 30);
+  const q = QUEST[level-1];
+  $("qLevel").textContent = level;
+  $("qScore").textContent = p.quest.score || 0;
+  $("qStreak").textContent = p.quest.streak || 0;
+  $("qScenario").textContent = q.scenario;
+  const choices = $("qChoices");
+  choices.innerHTML = "";
+  q.answers.forEach((ans, idx)=>{
+    const b = document.createElement("button");
+    b.className = "chip";
+    b.textContent = ans.text;
+    b.onclick = ()=> chooseQuest(idx);
+    choices.appendChild(b);
+  });
+  $("qFeedback").textContent = " ";
+}
+function chooseQuest(idx){
+  const p = getProfile();
+  const level = clamp(p.quest.level || 1, 1, 30);
+  const q = QUEST[level-1];
+  const ans = q.answers[idx];
+  if(ans.good){
+    p.quest.score = (p.quest.score||0) + 1;
+    p.quest.streak = (p.quest.streak||0) + 1;
+    $("qFeedback").textContent = "✅ Good choice. " + ans.why;
+    sparkAt($("st-view-game"), 0.7);
+  }else{
+    p.quest.streak = 0;
+    $("qFeedback").textContent = "⚠️ Not ideal. " + ans.why;
+  }
+  p.quest.level = Math.min(30, level + 1);
+  // garden reward
+  p.garden.pct = clamp((p.garden.pct||0) + (ans.good ? 3 : 0), 0, 100);
+  saveState();
+  refreshStudentTop();
+  drawSchoolCharts();
+  setTimeout(renderQuest, 400);
+}
+function restartQuest(){
+  const p = getProfile();
+  p.quest = { level:1, score:0, streak:0 };
+  saveState();
+  renderQuest();
+  toast("Restarted");
+}
+
+/* ---------- Calm Clicks ---------- */
+function startCalmClicks(){
+  if(calmClicks.running) return;
+  calmClicks.running = true;
+  calmClicks.left = 60;
+  calmClicks.score = 0;
+  $("ccScore").textContent = 0;
+  $("ccTime").textContent = "60s";
+  const area = $("ccArea");
+  area.innerHTML = "";
+  spawnBubble();
+  calmClicks.tick = setInterval(()=>{
+    calmClicks.left -= 1;
+    $("ccTime").textContent = calmClicks.left+"s";
+    if(calmClicks.left <= 0){
+      stopCalmClicks();
+      onCalmClicksDone();
+    }else{
+      // spawn occasionally
+      if(Math.random() < 0.55) spawnBubble();
+    }
+  }, 1000);
+  toast("Go slow & steady");
+}
+function stopCalmClicks(){
+  if(calmClicks.tick) clearInterval(calmClicks.tick);
+  calmClicks.tick = null;
+  calmClicks.running = false;
+}
+function spawnBubble(){
+  const area = $("ccArea");
+  const b = document.createElement("button");
+  b.className = "chip";
+  b.textContent = "🫧";
+  b.style.position = "absolute";
+  b.style.borderRadius = "999px";
+  b.style.padding = "10px 12px";
+  b.style.fontSize = "1rem";
+  const w = area.clientWidth || 320;
+  const h = area.clientHeight || 160;
+  b.style.left = Math.max(0, Math.random()*(w-60)) + "px";
+  b.style.top = Math.max(0, Math.random()*(h-40)) + "px";
+  const born = Date.now();
+  b.onclick = ()=>{
+    const age = (Date.now()-born)/1000;
+    // reward calm clicks (0.8s to 2.5s) more than rapid spam
+    let pts = 0;
+    if(age < 0.25) pts = 0;
+    else if(age < 0.8) pts = 1;
+    else if(age < 2.5) pts = 2;
+    else pts = 1;
+    calmClicks.score += pts;
+    $("ccScore").textContent = calmClicks.score;
+    b.remove();
+    if(pts>=2) sparkAt(area, 0.4);
+  };
+  area.appendChild(b);
+  // float animation
+  b.animate([{ transform:"translateY(0)", opacity:0.9 }, { transform:"translateY(-18px)", opacity:0.0 }], { duration: 2200 + Math.random()*1100, easing:"ease-out" });
+  setTimeout(()=>{ if(b.isConnected) b.remove(); }, 2600);
+}
+function onCalmClicksDone(){
+  $("ccTime").textContent = "Done";
+  if(calmClicks.score > (state.game.calmClicksBest||0)){
+    state.game.calmClicksBest = calmClicks.score;
+    $("ccBest").textContent = calmClicks.score;
+    saveState();
+    toast("New best 🎉");
+  }else{
+    toast("Done");
+  }
+  // reward student a little
+  if(state.active.role==="student"){
+    const p = getProfile();
+    p.garden.pct = clamp((p.garden.pct||0) + 4, 0, 100);
+    saveState();
+    refreshStudentTop();
+  }
+}
+
+/* ---------- charts (simple canvas) ---------- */
+function drawAxes(ctx, w, h){
+  ctx.clearRect(0,0,w,h);
+  ctx.lineWidth = 1;
+  ctx.strokeStyle = "rgba(15,23,42,.12)";
+  ctx.beginPath();
+  ctx.moveTo(34, 12); ctx.lineTo(34, h-26);
+  ctx.lineTo(w-10, h-26);
+  ctx.stroke();
+}
+function plotLine(ctx, points, w, h, yMin, yMax){
+  const x0 = 34, y0 = h-26, x1 = w-10, y1 = 12;
+  const dx = (x1-x0) / Math.max(1, points.length-1);
+  ctx.lineWidth = 3;
+  ctx.strokeStyle = "rgba(96,165,250,.9)";
+  ctx.beginPath();
+  points.forEach((v,i)=>{
+    const x = x0 + dx*i;
+    const y = y0 - ( (v-yMin) / (yMax-yMin || 1) ) * (y0-y1);
+    if(i===0) ctx.moveTo(x,y); else ctx.lineTo(x,y);
+  });
+  ctx.stroke();
+  // dots
+  ctx.fillStyle = "rgba(52,211,153,.9)";
+  points.forEach((v,i)=>{
+    const x = x0 + dx*i;
+    const y = y0 - ( (v-yMin) / (yMax-yMin || 1) ) * (y0-y1);
+    ctx.beginPath(); ctx.arc(x,y,4,0,Math.PI*2); ctx.fill();
+  });
+}
+function drawBars(ctx, labelsToCounts, w, h){
+  const x0=34, y0=h-26, x1=w-10, y1=12;
+  const keys = Object.keys(labelsToCounts);
+  const max = Math.max(1, ...Object.values(labelsToCounts));
+  const bw = (x1-x0) / Math.max(1, keys.length);
+  keys.forEach((k,i)=>{
+    const v = labelsToCounts[k];
+    const barH = (v/max) * (y0-y1);
+    const x = x0 + i*bw + 8;
+    const y = y0 - barH;
+    ctx.fillStyle = "rgba(167,139,250,.65)";
+    ctx.fillRect(x,y, bw-16, barH);
+    ctx.fillStyle = "rgba(15,23,42,.65)";
+    ctx.font = "12px system-ui";
+    ctx.fillText(String(v), x + (bw-16)/2 - 4, y - 6);
+  });
+}
+
+function drawStudentCharts(){
+  if(state.active.role!=="student") return;
+  const p = getProfile();
+
+  // Mood chart: map moods to numeric val just for trend: Great 5, Okay 4, Tired 3, Stressed/Anxious 2, Sad/Lonely 1, Angry 2
+  const moodMap = {Great:5, Okay:4, Tired:3, Stressed:2, Anxious:2, Angry:2, Sad:1, Lonely:1};
+  const m = p.moodLogs.slice(-7).map(x=> moodMap[x.mood] || 3);
+  const c1 = $("moodChart");
+  if(c1){
+    const ctx = c1.getContext("2d");
+    drawAxes(ctx, c1.width, c1.height);
+    if(m.length>=2){
+      plotLine(ctx, m, c1.width, c1.height, 1, 5);
+      $("moodTrendNote").textContent = "Higher line = better mood (rough guide).";
+    }else{
+      $("moodTrendNote").textContent = "Log moods to see a trend.";
+    }
+  }
+
+  const s = p.sleepLogs.slice(-7).map(x=> x.hours);
+  const c2 = $("sleepChart");
+  if(c2){
+    const ctx = c2.getContext("2d");
+    drawAxes(ctx, c2.width, c2.height);
+    if(s.length>=2){
+      plotLine(ctx, s, c2.width, c2.height, 0, 10);
+      $("sleepTrendNote").textContent = "Aim for your goal consistently.";
+    }else{
+      $("sleepTrendNote").textContent = "Log sleep to see a trend.";
+    }
+  }
+
+  // update sleep goal UI
+  $("sleepGoal").textContent = state.ui.sleepGoal || 8;
+  // habits UI
+  refreshHabitsUI();
+  // eco
+  refreshEcoDashboard();
+  // timer UI
+  updateTimerUI();
+}
+
+function drawSchoolCharts(){
+  if(state.active.role!=="school") return;
+  const c = $("schMoodChart");
+  const ctx = c.getContext("2d");
+  drawAxes(ctx, c.width, c.height);
+  const agg = aggregateDevice();
+  if(agg.totalMoodLogs === 0){
+    $("schMoodNote").textContent = "No data yet.";
+    return;
+  }
+  $("schMoodNote").textContent = "Counts from this device only.";
+  const dist = agg.moodDist;
+  const labels = ["Great","Okay","Stressed","Sad","Angry","Anxious","Tired","Lonely"];
+  const counts = {};
+  labels.forEach(l=> counts[l] = dist[l]||0);
+  drawBars(ctx, counts, c.width, c.height);
+}
+
+/* ---------- school view ---------- */
+function showSchoolView(view){
+  document.querySelectorAll("#schoolApp .tab").forEach(el=>{
+    el.classList.toggle("active", el.dataset.view === view);
+  });
+  $("sc-view-dash").classList.toggle("hide", view!=="dash");
+  $("sc-view-actions").classList.toggle("hide", view!=="actions");
+  if(view==="dash"){
+    const agg = aggregateDevice();
+    $("sKStudents").textContent = agg.students;
+    $("sKMoods").textContent = agg.totalMoodLogs;
+    $("sKSleep").textContent = agg.avgSleep === null ? "–" : agg.avgSleep.toFixed(1)+"h";
+    $("sKEco").textContent = agg.ecoDone;
+    $("sKFocus").textContent = agg.focusPoints;
+    $("sKHabits").textContent = agg.habitPoints;
+    drawSchoolCharts();
+    renderSchoolLists();
+  }
+}
+function renderSchoolLists(){
+  if(state.active.role!=="school") return;
+  const agg = aggregateDevice();
+  // top causes
+  const causeList = $("schCauseList");
+  causeList.innerHTML = "";
+  const topCauses = Object.entries(agg.causeCounts).sort((a,b)=>b[1]-a[1]).slice(0,6);
+  if(topCauses.length===0){
+    const li=document.createElement("li"); li.innerHTML = '<div class="fineprint">No data yet.</div>'; causeList.appendChild(li);
+  }else{
+    topCauses.forEach(([k,v])=>{
+      const li=document.createElement("li");
+      li.innerHTML = \`<div style="font-weight:900;">\${escapeHtml(k||"Unknown")}</div><span class="badge">\${v}</span>\`;
+      causeList.appendChild(li);
+    });
+  }
+  // eco list
+  const ecoList = $("schEcoList");
+  ecoList.innerHTML = "";
+  const topEco = Object.entries(agg.ecoCounts).sort((a,b)=>b[1]-a[1]).slice(0,6);
+  if(topEco.length===0){
+    const li=document.createElement("li"); li.innerHTML = '<div class="fineprint">No eco actions logged yet.</div>'; ecoList.appendChild(li);
+  }else{
+    topEco.forEach(([id,v])=>{
+      const txt = (ECO_ACTIONS.find(x=>x.id===id)||{}).text || id;
+      const li=document.createElement("li");
+      li.innerHTML = \`<div style="font-weight:900;">\${escapeHtml(txt)}</div><span class="badge">\${v}</span>\`;
+      ecoList.appendChild(li);
+    });
+  }
+}
+
+/* ---------- aggregation (device-level) ---------- */
+function aggregateDevice(){
+  const profiles = Object.values(state.profiles||{});
+  const students = profiles.length;
+
+  const moodDist = {};
+  let totalMoodLogs = 0;
+  const causeCounts = {};
+  let sleepSum = 0, sleepN = 0;
+  let ecoDone = 0;
+  const ecoCounts = {};
+  let focusPoints = 0;
+  let habitPoints = 0;
+
+  const w = currentWeekId();
+
+  profiles.forEach(p=>{
+    (p.moodLogs||[]).forEach(m=>{
+      moodDist[m.mood] = (moodDist[m.mood]||0) + 1;
+      totalMoodLogs += 1;
+      if(m.cause){
+        causeCounts[m.cause] = (causeCounts[m.cause]||0) + 1;
+      }
+    });
+    // latest 7 sleep logs per student
+    (p.sleepLogs||[]).slice(-7).forEach(s=>{
+      sleepSum += Number(s.hours||0);
+      sleepN += 1;
+    });
+    // eco week only
+    if((p.eco||{}).weekId !== w){
+      // ignore old week
+    }else{
+      const acts = p.eco.actions || {};
+      const keys = Object.keys(acts);
+      ecoDone += keys.length;
+      keys.forEach(id=>{
+        ecoCounts[id] = (ecoCounts[id]||0) + 1;
+      });
+    }
+    focusPoints += (p.focus && p.focus.points) ? p.focus.points : 0;
+    habitPoints += (p.habits && p.habits.points) ? p.habits.points : 0;
+  });
+
+  return {
+    students,
+    moodDist,
+    totalMoodLogs,
+    causeCounts,
+    avgSleep: sleepN ? (sleepSum/sleepN) : null,
+    ecoDone,
+    ecoCounts,
+    focusPoints,
+    habitPoints
+  };
+}
+
+/* ---------- reset ---------- */
+function resetAll(){
+  const ok = confirm("This will erase all saved data on this device. Continue?");
+  if(!ok) return;
+  localStorage.removeItem(KEY);
+  state = loadState();
+  stopTimer(false); stopBreath(); stopCalmClicks();
+  boot();
+  toast("Reset done");
+}
+
+/* ---------- utils ---------- */
+function cryptoRandom(){
+  // short id
+  return Math.random().toString(16).slice(2) + Date.now().toString(16).slice(4);
+}
+function capitalize(s){ return s.charAt(0).toUpperCase()+s.slice(1); }
+function escapeHtml(str){
+  return String(str).replace(/[&<>"']/g, (m)=>({
+    "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"
+  }[m]));
+}
+
+/* ---------- init defaults for non-auth UI ---------- */
+setRole(state.ui.lastRole || "student");
+</script>
+</body>
+</html>
